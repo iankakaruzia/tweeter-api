@@ -15,6 +15,10 @@ export class AuthService {
     private jwtService: JwtService
   ) {}
 
+  async validateUser(username: string) {
+    return this.usersService.getUserByUsernameOrEmail(username)
+  }
+
   async register(registerCredentialsDto: RegisterCredentialsDto) {
     const { password } = registerCredentialsDto
     const hashedPassword = await this.cryptographyService.hash(password)
