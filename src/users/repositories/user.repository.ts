@@ -28,4 +28,23 @@ export class UserRepository extends Repository<User> {
       }
     })
   }
+
+  async getByEmail(email: string) {
+    return this.findOne({ email })
+  }
+
+  async getByResetPasswordToken(token: string) {
+    return this.findOne({ resetPasswordToken: token })
+  }
+
+  async updateResetPasswordInfo(
+    user: User,
+    resetToken?: string,
+    expirationDate?: number
+  ) {
+    user.resetPasswordToken = resetToken
+    user.resetPasswordExpiration = expirationDate
+
+    await this.save(user)
+  }
 }

@@ -1,5 +1,12 @@
 import { Field, InputType } from '@nestjs/graphql'
-import { IsOptional, IsString, MinLength } from 'class-validator'
+import {
+  IsDate,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength
+} from 'class-validator'
+import { IsValidAge } from 'src/common/decorators/is-valid-age.decorator'
 
 @InputType()
 export class UpdateProfileInput {
@@ -14,4 +21,17 @@ export class UpdateProfileInput {
   @IsOptional()
   @Field({ nullable: true })
   bio: string
+
+  @IsString()
+  @MinLength(7)
+  @MaxLength(15)
+  @IsOptional()
+  @Field({ nullable: true })
+  phone: string
+
+  @IsDate()
+  @IsValidAge()
+  @IsOptional()
+  @Field({ nullable: true })
+  birthday: Date
 }

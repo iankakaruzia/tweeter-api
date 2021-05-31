@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module'
 import { CryptographyModule } from './cryptography/cryptography.module'
 import { AuthModule } from './auth/auth.module'
 import { UploadModule } from './upload/upload.module'
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { UploadModule } from './upload/upload.module'
     UsersModule,
     CryptographyModule,
     AuthModule,
-    UploadModule
+    UploadModule,
+    MailModule
   ]
 })
 export class AppModule {}

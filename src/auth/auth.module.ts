@@ -9,6 +9,7 @@ import { UsersService } from 'src/users/users.service'
 import { UsersModule } from 'src/users/users.module'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { UserRepository } from 'src/users/repositories/user.repository'
+import { MailModule } from 'src/mail/mail.module'
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { UserRepository } from 'src/users/repositories/user.repository'
     }),
     TypeOrmModule.forFeature([UserRepository]),
     CryptographyModule,
-    UsersModule
+    UsersModule,
+    MailModule
   ],
   providers: [AuthService, UsersService, JwtStrategy],
   controllers: [AuthController],

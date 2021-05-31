@@ -22,4 +22,10 @@ export class UserType {
 
   @Field({ nullable: true })
   coverPhoto: string
+
+  @Field({ nullable: true })
+  phone: string
+
+  @Field({ nullable: true })
+  birthday: Date
 }

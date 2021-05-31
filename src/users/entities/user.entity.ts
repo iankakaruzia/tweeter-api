@@ -39,6 +39,12 @@ export class User {
   coverPhoto: string
 
   @Column()
+  phone: string
+
+  @Column()
+  birthday: Date
+
+  @Column()
   isActive = true
 
   @Column()
@@ -48,4 +54,10 @@ export class User {
   @Column()
   @UpdateDateColumn()
   updatedAt: Date
+
+  @Column()
+  resetPasswordToken: string
+
+  @Column()
+  resetPasswordExpiration: number
 }
