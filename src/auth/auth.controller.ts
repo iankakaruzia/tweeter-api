@@ -9,6 +9,7 @@ import {
   UsePipes,
   ValidationPipe
 } from '@nestjs/common'
+import { randomBytes, createHash } from 'crypto'
 import { MailService } from 'src/mail/mail.service'
 import { AuthService } from './auth.service'
 import { ForgotPasswordDto } from './dtos/forgot-password.dto'
@@ -27,9 +28,24 @@ export class AuthController {
   @UsePipes(ValidationPipe)
   async register(@Body() registerCredentialsDto: RegisterCredentialsDto) {
     try {
-      return this.authService.register(registerCredentialsDto)
+      const confirmationToken = randomBytes(32).toString('hex')
+
+      const hashedConfirmationToken = createHash('sha256')
+        .update(confirmationToken)
+        .digest('hex')
+
+      const user = await this.authService.register(
+        registerCredentialsDto,
+        hashedConfirmationToken
+      )
+
+      await this.mailService.sendConfirmationEmail(user, confirmationToken)
+
+      return {
+        message: `Almost there! We've sent an email to ${user.email}. Open it up to activate your account.`
+      }
     } catch (error) {
-      throw new InternalServerErrorException()
+      throw new InternalServerErrorException(error)
     }
   }
 
@@ -39,7 +55,7 @@ export class AuthController {
     try {
       return await this.authService.login(loginCredentialsDto)
     } catch (error) {
-      throw new InternalServerErrorException()
+      throw new InternalServerErrorException(error)
     }
   }
 
@@ -61,7 +77,7 @@ export class AuthController {
         message: 'Token sent to email!'
       }
     } catch (error) {
-      throw new InternalServerErrorException()
+      throw new InternalServerErrorException(error)
     }
   }
 
@@ -88,7 +104,30 @@ export class AuthController {
         message: 'Password updated! Please log in to enjoy our platform.'
       }
     } catch (error) {
-      throw new InternalServerErrorException()
+      throw new InternalServerErrorException(error)
+    }
+  }
+
+  @Post('/confirmation/:token')
+  async confirmation(@Param('token') token: string) {
+    try {
+      const user = await this.authService.getUserByConfirmationToken(token)
+
+      if (!user) {
+        throw new NotFoundException('Invalid confirmation token!')
+      }
+
+      if (user.isActive) {
+        throw new BadRequestException('Account Already Activated!')
+      }
+
+      await this.authService.activateAccount(user)
+
+      return {
+        message: 'Account Successfully Activated!'
+      }
+    } catch (error) {
+      throw new InternalServerErrorException(error)
     }
   }
 }

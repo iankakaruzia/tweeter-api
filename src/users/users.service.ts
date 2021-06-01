@@ -12,9 +12,13 @@ export class UsersService {
   ) {}
 
   async createUser(
-    registerCredentialsDto: RegisterCredentialsDto
+    registerCredentialsDto: RegisterCredentialsDto,
+    hashedConfirmationToken: string
   ): Promise<User> {
-    return this.userRepository.createUser(registerCredentialsDto)
+    return this.userRepository.createUser(
+      registerCredentialsDto,
+      hashedConfirmationToken
+    )
   }
 
   async getUserByUsernameOrEmail(usernameOrEmail: string): Promise<User> {
@@ -27,6 +31,10 @@ export class UsersService {
 
   async getUserByResetPasswordToken(token: string): Promise<User> {
     return this.userRepository.getByResetPasswordToken(token)
+  }
+
+  async getUserByConfirmationToken(token: string): Promise<User> {
+    return this.userRepository.getByConfirmationToken(token)
   }
 
   async updateResetPasswordInfo(
@@ -77,6 +85,12 @@ export class UsersService {
     user.password = password
     user.resetPasswordExpiration = undefined
     user.resetPasswordToken = undefined
+
+    await this.userRepository.save(user)
+  }
+
+  async activateAccount(user: User) {
+    user.isActive = true
 
     await this.userRepository.save(user)
   }

@@ -45,7 +45,7 @@ export class User {
   birthday: Date
 
   @Column()
-  isActive = true
+  isActive: boolean
 
   @Column()
   @CreateDateColumn()
@@ -60,4 +60,7 @@ export class User {
 
   @Column()
   resetPasswordExpiration: number
+
+  @Column()
+  confirmationToken: string
 }

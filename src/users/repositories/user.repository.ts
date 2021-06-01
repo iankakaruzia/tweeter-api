@@ -6,7 +6,8 @@ import { User } from '../entities/user.entity'
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
   async createUser(
-    registerCredentialsDto: RegisterCredentialsDto
+    registerCredentialsDto: RegisterCredentialsDto,
+    hashedConfirmationToken: string
   ): Promise<User> {
     const { username, email, password } = registerCredentialsDto
 
@@ -15,6 +16,8 @@ export class UserRepository extends Repository<User> {
     user.username = username
     user.email = email
     user.password = password
+    user.isActive = false
+    user.confirmationToken = hashedConfirmationToken
 
     await this.save(user)
 
@@ -35,6 +38,10 @@ export class UserRepository extends Repository<User> {
 
   async getByResetPasswordToken(token: string) {
     return this.findOne({ resetPasswordToken: token })
+  }
+
+  async getByConfirmationToken(token: string) {
+    return this.findOne({ confirmationToken: token })
   }
 
   async updateResetPasswordInfo(

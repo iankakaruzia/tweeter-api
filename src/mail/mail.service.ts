@@ -27,4 +27,20 @@ export class MailService {
       }
     })
   }
+
+  async sendConfirmationEmail(user: User, token: string) {
+    const url = `${this.configService.get<string>(
+      'CLIENT_CONFIRMATION_URL'
+    )}${token}`
+
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Tweeter - Confirm your account!',
+      template: './confirmation',
+      context: {
+        url,
+        logo: this.configService.get<string>('CLIENT_URL')
+      }
+    })
+  }
 }

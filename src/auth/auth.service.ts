@@ -20,15 +20,19 @@ export class AuthService {
     return this.usersService.getUserByUsernameOrEmail(username)
   }
 
-  async register(registerCredentialsDto: RegisterCredentialsDto) {
+  async register(
+    registerCredentialsDto: RegisterCredentialsDto,
+    hashedConfirmationToken: string
+  ) {
     const { password } = registerCredentialsDto
     const hashedPassword = await this.cryptographyService.hash(password)
-    const user = await this.usersService.createUser({
-      ...registerCredentialsDto,
-      password: hashedPassword
-    })
-
-    return this.getAccessToken(user)
+    return this.usersService.createUser(
+      {
+        ...registerCredentialsDto,
+        password: hashedPassword
+      },
+      hashedConfirmationToken
+    )
   }
 
   async login(loginCredentialsDto: LoginCredentialsDto) {
@@ -39,6 +43,12 @@ export class AuthService {
 
     if (!user) {
       throw new UnauthorizedException('Invalid crendentials')
+    }
+
+    if (!user.isActive) {
+      throw new UnauthorizedException(
+        'Your account must be verified before you can log in.'
+      )
     }
 
     const isValidPassword = await this.cryptographyService.compare(
@@ -91,9 +101,19 @@ export class AuthService {
     return this.usersService.getUserByResetPasswordToken(hashedToken)
   }
 
+  async getUserByConfirmationToken(token: string) {
+    const hashedToken = createHash('sha256').update(token).digest('hex')
+
+    return this.usersService.getUserByConfirmationToken(hashedToken)
+  }
+
   async updateUserPassword(user: User, password: string) {
     const hashedPassword = await this.cryptographyService.hash(password)
     await this.usersService.updateUserPassword(user, hashedPassword)
+  }
+
+  async activateAccount(user: User) {
+    await this.usersService.activateAccount(user)
   }
 
   private getAccessToken(user: User) {

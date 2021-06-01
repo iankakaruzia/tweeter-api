@@ -32,7 +32,7 @@ export class UsersResolver {
     try {
       return await this.usersService.updateUserProfile(updateProfileInput, user)
     } catch (error) {
-      throw new InternalServerErrorException()
+      throw new InternalServerErrorException(error)
     }
   }
 
@@ -55,7 +55,7 @@ export class UsersResolver {
       })
       return await this.usersService.updateUserProfilePhoto(secure_url, user)
     } catch (error) {
-      throw new InternalServerErrorException()
+      throw new InternalServerErrorException(error)
     }
   }
 
@@ -75,7 +75,7 @@ export class UsersResolver {
       })
       return await this.usersService.updateUserCoverPhoto(secure_url, user)
     } catch (error) {
-      throw new InternalServerErrorException()
+      throw new InternalServerErrorException(error)
     }
   }
 }
