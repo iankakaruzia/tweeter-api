@@ -2,11 +2,22 @@ import { Module } from '@nestjs/common'
 import { MailerModule } from '@nestjs-modules/mailer'
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter'
 import { ConfigService } from '@nestjs/config'
+import { MiddlewareBuilder } from '@nestjs/core'
+import { BullModule, InjectQueue } from '@nestjs/bull'
+import { createBullBoard } from 'bull-board'
+import { BullAdapter } from 'bull-board/bullAdapter'
+import { Queue } from 'bull'
 import { join } from 'path'
 import { MailService } from './mail.service'
+import { MailProducer } from './jobs/mail.producer'
+import { MailConsumer } from './jobs/mail.consumer'
+import { SEND_MAIL_QUEUE } from './jobs/constants'
 
 @Module({
   imports: [
+    BullModule.registerQueue({
+      name: SEND_MAIL_QUEUE
+    }),
     MailerModule.forRootAsync({
       useFactory: async (config: ConfigService) => ({
         transport: {
@@ -31,7 +42,14 @@ import { MailService } from './mail.service'
       inject: [ConfigService]
     })
   ],
-  providers: [MailService],
+  providers: [MailProducer, MailConsumer, MailService],
   exports: [MailService]
 })
-export class MailModule {}
+export class MailModule {
+  constructor(@InjectQueue(SEND_MAIL_QUEUE) private sendMailQueue: Queue) {}
+
+  configure(consumer: MiddlewareBuilder) {
+    const { router } = createBullBoard([new BullAdapter(this.sendMailQueue)])
+    consumer.apply(router).forRoutes('/admin/queues')
+  }
+}

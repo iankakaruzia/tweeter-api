@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common'
-import { MailerService } from '@nestjs-modules/mailer'
 import { ConfigService } from '@nestjs/config'
 import { User } from 'src/users/entities/user.entity'
+import { MailProducer } from './jobs/mail.producer'
 
 @Injectable()
 export class MailService {
   constructor(
     private configService: ConfigService,
-    private mailerService: MailerService
+    private mailProducer: MailProducer
   ) {}
 
   async sendForgotPasswordEmail(user: User, token: string) {
@@ -15,7 +15,7 @@ export class MailService {
       'CLIENT_RESET_PASSWORD_URL'
     )}${token}`
 
-    await this.mailerService.sendMail({
+    await this.mailProducer.sendMail({
       to: user.email,
       subject: 'Forgot your Password?',
       template: './forgot-password',
@@ -33,7 +33,7 @@ export class MailService {
       'CLIENT_CONFIRMATION_URL'
     )}${token}`
 
-    await this.mailerService.sendMail({
+    await this.mailProducer.sendMail({
       to: user.email,
       subject: 'Tweeter - Confirm your account!',
       template: './confirmation',
