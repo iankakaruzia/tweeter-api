@@ -1,37 +1,34 @@
-
-![Logo](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/th5xamgrr6se0x5ro4g6.png)
-
+![Tweeter Logo](https://user-images.githubusercontent.com/19388057/121534114-4bb16280-c9d7-11eb-8448-5df4cf4a71b0.png)
 
 # Tweeter API
 
-A brief description of what this project does and who it's for
+A Twitter-like API for studies
+The premise of the API is a challenge from the [devChallenges site](https://devchallenges.io/challenges/rleoQc34THclWx1cFFKH)
 
 ## Badges
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Features
+## Current Features
 
-- Light/dark mode toggle
-- Live previews
-- Fullscreen mode
-- Cross platform
-
+- Basic Auth Features
+  - Login
+  - Register
+  - Account Confirmation
+  - Forgot Password
+  - Reset Password
+- User
+  - Update Profile Information
+  - Update Profile Photo
+  - Update Cover Photo
 
 ## Tech Stack
 
 **Server:** NestJS, Express, GraphQL, Cloudinary, Nodemailer
 
-
-## Demo
-
-Insert gif or link to demo
-
-
 ## Environment Variables
 
 To run this project, you will need to add some environment variables to your .env file, check the .env.example file to see them.
-
 
 ## Run Locally
 
@@ -59,7 +56,6 @@ Start the server
   yarn start:dev
 ```
 
-
 ## Running Tests
 
 To run tests, run the following command
@@ -68,37 +64,9 @@ To run tests, run the following command
   yarn test
 ```
 
-
-## API Reference
-
-#### Get all items
-
-```http
-  GET /api/items
-```
-
-| Parameter | Type     | Description                |
-| :-------- | :------- | :------------------------- |
-| `api_key` | `string` | **Required**. Your API key |
-
-#### Get item
-
-```http
-  GET /api/items/${id}
-```
-
-| Parameter | Type     | Description                       |
-| :-------- | :------- | :-------------------------------- |
-| `id`      | `string` | **Required**. Id of item to fetch |
-
-#### add(num1, num2)
-
-Takes two numbers and returns the sum.
-
-
 ## Acknowledgements
 
- - [devChallenges](https://devchallenges.io/challenges/rleoQc34THclWx1cFFKH)
+ - [devChallenges.io | Real-life Coding Challenges to become a Software Engineer](https://devchallenges.io/)
 
 ## License
 
