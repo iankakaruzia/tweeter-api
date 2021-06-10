@@ -7,6 +7,7 @@ The premise of the API is a challenge from the [devChallenges site](https://devc
 
 ## Badges
 
+[![CircleCI](https://circleci.com/gh/iankakaruzia/tweeter-api/tree/main.svg?style=svg))](https://circleci.com/gh/iankakaruzia/tweeter-api/tree/main)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Current Features
