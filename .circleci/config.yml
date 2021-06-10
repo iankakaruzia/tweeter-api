@@ -3,11 +3,83 @@ version: 2.1
 orbs:
   heroku: circleci/heroku@1.2
 
+executors:
+  app-executor:
+    docker:
+      - image: circleci/node:14
+    working_directory: ~/repo
+
+aliases:
+  - &show-current-branch-name
+    run:
+      name: Show current branch
+      command: echo ${CIRCLE_BRANCH}
+  - &restore-cache
+    restore_cache:
+      keys:
+        - app-{{ checksum "package.json" }}
+        - app-
+  - &install-dependencies
+    run:
+      name: Install dependencies
+      command: npm install
+  - &save-cache
+    save_cache:
+      paths:
+        - node_modules
+      key: app-{{ checksum "package.json" }}
+
+jobs:
+  build:
+    executor: app-executor
+    steps:
+      - checkout
+      - *show-current-branch-name
+      - *restore-cache
+      - *install-dependencies
+      - *save-cache
+
+  linting:
+    executor: app-executor
+    steps:
+      - checkout
+      - *show-current-branch-name
+      - *restore-cache
+      - run:
+          name: Run linting
+          command: npm run lint:check
+
+  prettier:
+    executor: app-executor
+    steps:
+      - checkout
+      - *show-current-branch-name
+      - *restore-cache
+      - run:
+          name: Run prettier check
+          command: npm run prettier:check
+
 workflows:
-  sample:
+  check_and_deploy:
     jobs:
+      - build
+      - linting:
+          requires:
+            - build
+          filters:
+            branches:
+              only: main
+      - prettier:
+          requires:
+            - build
+          filters:
+            branches:
+              only: main
       - heroku/deploy-via-git:
           force: true
+          requires:
+            - linting
+            - prettier
           filters:
             branches:
               only: main
