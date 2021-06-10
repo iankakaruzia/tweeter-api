@@ -1,15 +1,15 @@
-import { RegisterCredentialsDto } from 'src/auth/dtos/register-credentials.dto'
 import { EntityRepository, Repository } from 'typeorm'
 import { v4 as uuid } from 'uuid'
+import { RegisterInput } from 'src/auth/inputs/register.input'
 import { User } from '../entities/user.entity'
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
   async createUser(
-    registerCredentialsDto: RegisterCredentialsDto,
+    registerInput: RegisterInput,
     hashedConfirmationToken: string
   ): Promise<User> {
-    const { username, email, password } = registerCredentialsDto
+    const { username, email, password } = registerInput
 
     const user = new User()
     user.id = uuid()

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { RegisterCredentialsDto } from 'src/auth/dtos/register-credentials.dto'
+import { RegisterInput } from 'src/auth/inputs/register.input'
 import { User } from './entities/user.entity'
 import { UpdateProfileInput } from './inputs/update-profile.input'
 import { UserRepository } from './repositories/user.repository'
@@ -12,11 +12,11 @@ export class UsersService {
   ) {}
 
   async createUser(
-    registerCredentialsDto: RegisterCredentialsDto,
+    registerInput: RegisterInput,
     hashedConfirmationToken: string
   ): Promise<User> {
     return this.userRepository.createUser(
-      registerCredentialsDto,
+      registerInput,
       hashedConfirmationToken
     )
   }

@@ -4,8 +4,8 @@ import { randomBytes, createHash } from 'crypto'
 import { CryptographyService } from 'src/cryptography/cryptography.service'
 import { User } from 'src/users/entities/user.entity'
 import { UsersService } from 'src/users/users.service'
-import { LoginCredentialsDto } from './dtos/login-credentials.dto'
-import { RegisterCredentialsDto } from './dtos/register-credentials.dto'
+import { LoginInput } from './inputs/login.input'
+import { RegisterInput } from './inputs/register.input'
 import { JwtPayload } from './jwt-payload.interface'
 
 @Injectable()
@@ -21,22 +21,22 @@ export class AuthService {
   }
 
   async register(
-    registerCredentialsDto: RegisterCredentialsDto,
+    registerInput: RegisterInput,
     hashedConfirmationToken: string
   ) {
-    const { password } = registerCredentialsDto
+    const { password } = registerInput
     const hashedPassword = await this.cryptographyService.hash(password)
     return this.usersService.createUser(
       {
-        ...registerCredentialsDto,
+        ...registerInput,
         password: hashedPassword
       },
       hashedConfirmationToken
     )
   }
 
-  async login(loginCredentialsDto: LoginCredentialsDto) {
-    const { usernameOrEmail, password } = loginCredentialsDto
+  async login(loginInput: LoginInput) {
+    const { usernameOrEmail, password } = loginInput
     const user = await this.usersService.getUserByUsernameOrEmail(
       usernameOrEmail
     )
