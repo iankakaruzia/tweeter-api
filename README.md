@@ -2,7 +2,7 @@
 
 # Tweeter API
 
-A Twitter-like API for studies
+A Twitter-like API for studies <br>
 The premise of the API is a challenge from the [devChallenges site](https://devchallenges.io/challenges/rleoQc34THclWx1cFFKH)
 
 ## Badges
