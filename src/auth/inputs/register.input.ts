@@ -1,3 +1,4 @@
+import { Field, InputType } from '@nestjs/graphql'
 import {
   IsEmail,
   IsString,
@@ -6,13 +7,16 @@ import {
   MinLength
 } from 'class-validator'
 
-export class RegisterCredentialsDto {
+@InputType()
+export class RegisterInput {
   @IsString()
   @MinLength(2)
   @MaxLength(20)
+  @Field()
   username: string
 
   @IsEmail()
+  @Field()
   email: string
 
   @IsString()
@@ -21,5 +25,6 @@ export class RegisterCredentialsDto {
   @Matches(/(?:(?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
     message: 'Password too weak!'
   })
+  @Field()
   password: string
 }

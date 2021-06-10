@@ -1,32 +1,38 @@
 import {
   BadRequestException,
-  Body,
-  Controller,
   InternalServerErrorException,
-  NotFoundException,
-  Param,
-  Post,
-  UsePipes,
-  ValidationPipe
+  NotFoundException
 } from '@nestjs/common'
+import { Args, Mutation, Resolver } from '@nestjs/graphql'
 import { randomBytes, createHash } from 'crypto'
 import { MailService } from 'src/mail/mail.service'
+import { UserType } from 'src/users/models/user.type'
 import { AuthService } from './auth.service'
-import { ForgotPasswordDto } from './dtos/forgot-password.dto'
-import { LoginCredentialsDto } from './dtos/login-credentials.dto'
-import { RegisterCredentialsDto } from './dtos/register-credentials.dto'
-import { ResetPasswordDto } from './dtos/reset-password.dto'
+import { ForgotPasswordInput } from './inputs/forgot-password.input'
+import { LoginInput } from './inputs/login.input'
+import { RegisterInput } from './inputs/register.input'
+import { ResetPasswordInput } from './inputs/reset-password.input'
+import { AuthDefaultReturnType } from './models/auth-default-return.type'
+import { AuthenticatedUserType } from './models/authenticated-user.type'
 
-@Controller('auth')
-export class AuthController {
+@Resolver((_of: any) => UserType)
+export class AuthResolver {
   constructor(
     private authService: AuthService,
     private mailService: MailService
   ) {}
 
-  @Post('/register')
-  @UsePipes(ValidationPipe)
-  async register(@Body() registerCredentialsDto: RegisterCredentialsDto) {
+  @Mutation((_returns) => AuthenticatedUserType)
+  async login(@Args('loginInput') loginInput: LoginInput) {
+    try {
+      return await this.authService.login(loginInput)
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
+  }
+
+  @Mutation((_returns) => AuthDefaultReturnType)
+  async register(@Args('registerInput') registerInput: RegisterInput) {
     try {
       const confirmationToken = randomBytes(32).toString('hex')
 
@@ -35,7 +41,7 @@ export class AuthController {
         .digest('hex')
 
       const user = await this.authService.register(
-        registerCredentialsDto,
+        registerInput,
         hashedConfirmationToken
       )
 
@@ -49,20 +55,35 @@ export class AuthController {
     }
   }
 
-  @Post('/login')
-  @UsePipes(ValidationPipe)
-  async login(@Body() loginCredentialsDto: LoginCredentialsDto) {
+  @Mutation((_returns) => AuthDefaultReturnType)
+  async confirmateAccount(@Args('token') token: string) {
     try {
-      return await this.authService.login(loginCredentialsDto)
+      const user = await this.authService.getUserByConfirmationToken(token)
+
+      if (!user) {
+        throw new NotFoundException('Invalid confirmation token!')
+      }
+
+      if (user.isActive) {
+        throw new BadRequestException('Account Already Activated!')
+      }
+
+      await this.authService.activateAccount(user)
+
+      return {
+        message: 'Account Successfully Activated!'
+      }
     } catch (error) {
       throw new InternalServerErrorException(error)
     }
   }
 
-  @Post('/forgot-password')
-  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+  @Mutation((_returns) => AuthDefaultReturnType)
+  async forgotPassword(
+    @Args('forgotPasswordInput') forgotPasswordInput: ForgotPasswordInput
+  ) {
     try {
-      const { email } = forgotPasswordDto
+      const { email } = forgotPasswordInput
       const user = await this.authService.checkUser(email)
 
       if (!user) {
@@ -81,13 +102,12 @@ export class AuthController {
     }
   }
 
-  @Post('/reset-password/:token')
+  @Mutation((_returns) => AuthDefaultReturnType)
   async resetPassword(
-    @Body() resetPasswordDto: ResetPasswordDto,
-    @Param('token') token: string
+    @Args('resetPasswordInput') resetPasswordInput: ResetPasswordInput
   ) {
     try {
-      const { password } = resetPasswordDto
+      const { password, token } = resetPasswordInput
       const user = await this.authService.getUserByResetPasswordToken(token)
 
       const isValidToken = Date.now() <= user?.resetPasswordExpiration
@@ -102,29 +122,6 @@ export class AuthController {
 
       return {
         message: 'Password updated! Please log in to enjoy our platform.'
-      }
-    } catch (error) {
-      throw new InternalServerErrorException(error)
-    }
-  }
-
-  @Post('/confirmation/:token')
-  async confirmation(@Param('token') token: string) {
-    try {
-      const user = await this.authService.getUserByConfirmationToken(token)
-
-      if (!user) {
-        throw new NotFoundException('Invalid confirmation token!')
-      }
-
-      if (user.isActive) {
-        throw new BadRequestException('Account Already Activated!')
-      }
-
-      await this.authService.activateAccount(user)
-
-      return {
-        message: 'Account Successfully Activated!'
       }
     } catch (error) {
       throw new InternalServerErrorException(error)
