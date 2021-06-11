@@ -4,6 +4,7 @@ import { graphqlUploadExpress } from 'graphql-upload'
 import * as helmet from 'helmet'
 import * as basicAuth from 'express-basic-auth'
 import { ConfigService } from '@nestjs/config'
+import * as Sentry from '@sentry/node'
 import { AppModule } from './app.module'
 
 const configService = new ConfigService()
@@ -11,6 +12,10 @@ const configService = new ConfigService()
 async function bootstrap() {
   const BULL_UI_USERNAME = configService.get<string>('BULL_UI_USERNAME')
   const BULL_UI_PASSWORD = configService.get<string>('BULL_UI_PASSWORD')
+  const SENTRY_DNS = configService.get<string>('SENTRY_DNS')
+  const SENTRY_TRACES_SAMPLE_RATE = configService.get<string>(
+    'SENTRY_TRACES_SAMPLE_RATE'
+  )
 
   const app = await NestFactory.create(AppModule)
 
@@ -36,6 +41,11 @@ async function bootstrap() {
       challenge: true
     })
   )
+
+  Sentry.init({
+    dsn: SENTRY_DNS,
+    tracesSampleRate: Number(SENTRY_TRACES_SAMPLE_RATE)
+  })
 
   await app.listen(process.env.PORT || 8080)
 }

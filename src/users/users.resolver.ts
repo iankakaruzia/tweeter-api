@@ -1,7 +1,12 @@
-import { InternalServerErrorException, UseGuards } from '@nestjs/common'
+import {
+  InternalServerErrorException,
+  UseGuards,
+  UseInterceptors
+} from '@nestjs/common'
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql'
 import { CurrentUser } from 'src/auth/current-user.decorator'
 import { GqlAuthGuard } from 'src/auth/gql-auth-guard'
+import { SentryInterceptor } from 'src/common/interceptors/sentry.interceptor'
 import { UploadService } from 'src/upload/upload.service'
 import { User } from './entities/user.entity'
 import { UpdateCoverPhotoInput } from './inputs/update-cover-photo.input'
@@ -10,6 +15,7 @@ import { UpdateProfileInput } from './inputs/update-profile.input'
 import { UserType } from './models/user.type'
 import { UsersService } from './users.service'
 
+@UseInterceptors(SentryInterceptor)
 @Resolver((_of: any) => UserType)
 export class UsersResolver {
   constructor(
