@@ -34,6 +34,7 @@
     "@nestjs/platform-express": "^7.6.15",
     "@nestjs/throttler": "^1.1.4",
     "@nestjs/typeorm": "^7.1.5",
+    "@sentry/node": "^6.6.0",
     "apollo-server-express": "^2.24.0",
     "bcrypt": "^5.0.1",
     "bull": "^3.22.7",

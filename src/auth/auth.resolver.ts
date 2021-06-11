@@ -1,10 +1,12 @@
 import {
   BadRequestException,
   InternalServerErrorException,
-  NotFoundException
+  NotFoundException,
+  UseInterceptors
 } from '@nestjs/common'
 import { Args, Mutation, Resolver } from '@nestjs/graphql'
 import { randomBytes, createHash } from 'crypto'
+import { SentryInterceptor } from 'src/common/interceptors/sentry.interceptor'
 import { MailService } from 'src/mail/mail.service'
 import { UserType } from 'src/users/models/user.type'
 import { AuthService } from './auth.service'
@@ -15,6 +17,7 @@ import { ResetPasswordInput } from './inputs/reset-password.input'
 import { AuthDefaultReturnType } from './models/auth-default-return.type'
 import { AuthenticatedUserType } from './models/authenticated-user.type'
 
+@UseInterceptors(SentryInterceptor)
 @Resolver((_of: any) => UserType)
 export class AuthResolver {
   constructor(
