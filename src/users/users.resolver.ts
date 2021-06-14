@@ -51,14 +51,20 @@ export class UsersResolver {
   ) {
     try {
       const { photo } = updateProfilePhotoInput
-      const { secure_url } = await this.uploadService.uploadStream(photo, {
-        use_filename: true,
-        filename_override: user.username,
-        unique_filename: false,
-        folder: 'profile',
-        tags: ['profile'],
-        allowed_formats: ['jpg', 'png']
-      })
+      const { createReadStream } = await photo
+      const photoStream = createReadStream()
+
+      const { secure_url } = await this.uploadService.uploadStream(
+        photoStream,
+        {
+          use_filename: true,
+          filename_override: user.username,
+          unique_filename: false,
+          folder: 'profile',
+          tags: ['profile'],
+          allowed_formats: ['jpg', 'png']
+        }
+      )
       return await this.usersService.updateUserProfilePhoto(secure_url, user)
     } catch (error) {
       throw new InternalServerErrorException(error)
@@ -74,11 +80,17 @@ export class UsersResolver {
   ) {
     try {
       const { photo } = updateCoverPhotoInput
-      const { secure_url } = await this.uploadService.uploadStream(photo, {
-        folder: 'cover',
-        tags: ['cover'],
-        allowed_formats: ['jpg', 'png']
-      })
+      const { createReadStream } = await photo
+      const photoStream = createReadStream()
+
+      const { secure_url } = await this.uploadService.uploadStream(
+        photoStream,
+        {
+          folder: 'cover',
+          tags: ['cover'],
+          allowed_formats: ['jpg', 'png']
+        }
+      )
       return await this.usersService.updateUserCoverPhoto(secure_url, user)
     } catch (error) {
       throw new InternalServerErrorException(error)

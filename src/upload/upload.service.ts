@@ -5,18 +5,16 @@ import {
   UploadApiResponse,
   v2 as cloudinary
 } from 'cloudinary'
-import { FileUpload } from 'graphql-upload'
+import { ReadStream } from 'fs'
 
 @Injectable()
 export class UploadService {
   constructor(private configService: ConfigService) {}
 
   async uploadStream(
-    file: Promise<FileUpload>,
+    fileStream: ReadStream,
     options?: UploadApiOptions
   ): Promise<UploadApiResponse> {
-    const { createReadStream } = await file
-    const fileStream = createReadStream()
     cloudinary.config({
       cloud_name: this.configService.get<string>('CLOUDINARY_CLOUD_NAME'),
       api_key: this.configService.get<string>('CLOUDINARY_API_KEY'),

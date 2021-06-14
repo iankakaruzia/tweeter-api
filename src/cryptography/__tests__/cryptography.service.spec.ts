@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import * as bcrypt from 'bcrypt'
+import { throwError } from '../../utils/tests/throw-error'
 
 import { CryptographyService } from '../cryptography.service'
 
@@ -9,6 +10,9 @@ jest.mock('bcrypt', () => ({
   },
   async compare(): Promise<boolean> {
     return true
+  },
+  async genSalt(): Promise<string> {
+    return 'some_salt'
   }
 }))
 
@@ -20,13 +24,13 @@ describe('CryptographyService', () => {
       providers: [CryptographyService]
     }).compile()
 
-    service = module.get<CryptographyService>(CryptographyService)
+    service = module.get(CryptographyService)
   })
 
   describe('hash', () => {
     it('should call Bcrypt hash with the correct value', async () => {
       const plaintext = 'some_text'
-      const salt = 12
+      const salt = 'some_salt'
       const hashSpy = jest.spyOn(bcrypt, 'hash')
       await service.hash(plaintext)
 
@@ -42,9 +46,7 @@ describe('CryptographyService', () => {
 
     it('should throw if hash throws', async () => {
       const plaintext = 'some_text'
-      jest.spyOn(bcrypt, 'hash').mockImplementationOnce(() => {
-        throw new Error()
-      })
+      jest.spyOn(bcrypt, 'hash').mockImplementationOnce(throwError)
       const promise = service.hash(plaintext)
 
       await expect(promise).rejects.toThrow()
@@ -72,9 +74,7 @@ describe('CryptographyService', () => {
     it('should throw if compare throws', async () => {
       const plaintext = 'some_text'
       const digest = 'some_hashed_text'
-      jest.spyOn(bcrypt, 'compare').mockImplementationOnce(() => {
-        throw new Error()
-      })
+      jest.spyOn(bcrypt, 'compare').mockImplementationOnce(throwError)
       const promise = service.compare(plaintext, digest)
 
       await expect(promise).rejects.toThrow()
