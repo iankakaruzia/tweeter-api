@@ -1,30 +1,51 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { GraphQLModule } from '@nestjs/graphql'
-import { ConfigModule } from '@nestjs/config'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { BullModule } from '@nestjs/bull'
-import { typeOrmConfig } from './config/typeorm.config'
 import { UsersModule } from './users/users.module'
 import { CryptographyModule } from './cryptography/cryptography.module'
 import { AuthModule } from './auth/auth.module'
 import { UploadModule } from './upload/upload.module'
 import { MailModule } from './mail/mail.module'
+import { configValidationSchema } from './config/config.schema'
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: ['.env'],
+      validationSchema: configValidationSchema
+    }),
     ThrottlerModule.forRoot({
       ttl: 60,
       limit: 10
     }),
-    ConfigModule.forRoot({ isGlobal: true }),
-    BullModule.forRoot({
-      redis: {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: Number(process.env.REDIS_PORT) || 6379
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          redis: {
+            host: configService.get('REDIS_HOST'),
+            port: configService.get('REDIS_PORT')
+          }
+        }
       }
     }),
-    TypeOrmModule.forRoot(typeOrmConfig),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          type: 'mongodb',
+          url: configService.get('MONGODB_URL'),
+          synchronize: true,
+          useUnifiedTopology: true,
+          autoLoadEntities: true
+        }
+      }
+    }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
       uploads: false

@@ -10,12 +10,13 @@ import { AppModule } from './app.module'
 const configService = new ConfigService()
 
 async function bootstrap() {
-  const BULL_UI_USERNAME = configService.get<string>('BULL_UI_USERNAME')
-  const BULL_UI_PASSWORD = configService.get<string>('BULL_UI_PASSWORD')
-  const SENTRY_DNS = configService.get<string>('SENTRY_DNS')
-  const SENTRY_TRACES_SAMPLE_RATE = configService.get<string>(
+  const BULL_UI_USERNAME = configService.get('BULL_UI_USERNAME')
+  const BULL_UI_PASSWORD = configService.get('BULL_UI_PASSWORD')
+  const SENTRY_DNS = configService.get('SENTRY_DNS')
+  const SENTRY_TRACES_SAMPLE_RATE = configService.get(
     'SENTRY_TRACES_SAMPLE_RATE'
   )
+  const PORT = configService.get('PORT')
 
   const app = await NestFactory.create(AppModule)
 
@@ -47,7 +48,7 @@ async function bootstrap() {
     tracesSampleRate: Number(SENTRY_TRACES_SAMPLE_RATE)
   })
 
-  await app.listen(process.env.PORT || 8080)
+  await app.listen(PORT || 8080)
 }
 
 bootstrap()
