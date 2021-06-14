@@ -9,7 +9,7 @@ import { UsersModule } from 'src/users/users.module'
 import { UserRepository } from 'src/users/repositories/user.repository'
 import { MailModule } from 'src/mail/mail.module'
 import { AuthService } from './auth.service'
-import { JwtStrategy } from './jwt.strategy'
+import { JwtStrategy } from './strategies/jwt.strategy'
 import { AuthResolver } from './auth.resolver'
 
 @Module({

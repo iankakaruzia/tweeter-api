@@ -6,7 +6,7 @@ import { User } from 'src/users/entities/user.entity'
 import { UsersService } from 'src/users/users.service'
 import { LoginInput } from './inputs/login.input'
 import { RegisterInput } from './inputs/register.input'
-import { JwtPayload } from './jwt-payload.interface'
+import { JwtPayload } from './interfaces/jwt-payload.interface'
 
 @Injectable()
 export class AuthService {

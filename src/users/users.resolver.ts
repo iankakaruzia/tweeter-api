@@ -4,8 +4,8 @@ import {
   UseInterceptors
 } from '@nestjs/common'
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql'
-import { CurrentUser } from 'src/auth/current-user.decorator'
-import { GqlAuthGuard } from 'src/auth/gql-auth-guard'
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator'
+import { GqlAuthGuard } from 'src/auth/guards/gql-auth.guard'
 import { SentryInterceptor } from 'src/common/interceptors/sentry.interceptor'
 import { UploadService } from 'src/upload/upload.service'
 import { User } from './entities/user.entity'
