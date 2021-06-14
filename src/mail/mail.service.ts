@@ -11,9 +11,7 @@ export class MailService {
   ) {}
 
   async sendForgotPasswordEmail(user: User, token: string) {
-    const url = `${this.configService.get<string>(
-      'CLIENT_RESET_PASSWORD_URL'
-    )}${token}`
+    const url = `${this.configService.get('CLIENT_RESET_PASSWORD_URL')}${token}`
 
     await this.mailProducer.sendMail({
       to: user.email,
@@ -23,15 +21,13 @@ export class MailService {
         name: user.name || user.username,
         email: user.email,
         url,
-        logo: this.configService.get<string>('CLIENT_URL')
+        logo: this.configService.get('CLIENT_URL')
       }
     })
   }
 
   async sendConfirmationEmail(user: User, token: string) {
-    const url = `${this.configService.get<string>(
-      'CLIENT_CONFIRMATION_URL'
-    )}${token}`
+    const url = `${this.configService.get('CLIENT_CONFIRMATION_URL')}${token}`
 
     await this.mailProducer.sendMail({
       to: user.email,
@@ -39,7 +35,7 @@ export class MailService {
       template: './confirmation',
       context: {
         url,
-        logo: this.configService.get<string>('CLIENT_URL')
+        logo: this.configService.get('CLIENT_URL')
       }
     })
   }

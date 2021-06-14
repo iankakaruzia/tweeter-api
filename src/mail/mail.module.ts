@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { MailerModule } from '@nestjs-modules/mailer'
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter'
-import { ConfigService } from '@nestjs/config'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import { MiddlewareBuilder } from '@nestjs/core'
 import { BullModule, InjectQueue } from '@nestjs/bull'
 import { createBullBoard } from 'bull-board'
@@ -15,6 +15,7 @@ import { SEND_MAIL_QUEUE } from './jobs/constants'
 
 @Module({
   imports: [
+    ConfigModule,
     BullModule.registerQueue({
       name: SEND_MAIL_QUEUE
     }),
@@ -39,7 +40,8 @@ import { SEND_MAIL_QUEUE } from './jobs/constants'
           }
         }
       }),
-      inject: [ConfigService]
+      inject: [ConfigService],
+      imports: [ConfigModule]
     })
   ],
   providers: [MailProducer, MailConsumer, MailService],
