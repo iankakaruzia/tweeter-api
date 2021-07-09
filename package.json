@@ -42,7 +42,7 @@
     "bull-board": "^2.1.2",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
-    "cloudinary": "^1.25.1",
+    "cloudinary": "^1.26.0",
     "date-fns": "^2.22.1",
     "express-basic-auth": "^1.2.0",
     "graphql": "^15.5.0",
