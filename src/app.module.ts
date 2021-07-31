@@ -48,6 +48,7 @@ import { configValidationSchema } from './config/config.schema'
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
+      sortSchema: true,
       uploads: false
     }),
     UsersModule,
