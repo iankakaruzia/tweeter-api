@@ -16,10 +16,6 @@ export class AuthService {
     private jwtService: JwtService
   ) {}
 
-  async validateUser(username: string) {
-    return this.usersService.getUserByUsernameOrEmail(username)
-  }
-
   async register(
     registerInput: RegisterInput,
     hashedConfirmationToken: string
@@ -64,7 +60,7 @@ export class AuthService {
   }
 
   async checkUser(email: string) {
-    return this.usersService.getUserEmail(email)
+    return this.usersService.getUserByUsernameOrEmail(email)
   }
 
   async createPasswordResetToken(user: User) {

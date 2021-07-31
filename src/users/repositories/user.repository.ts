@@ -1,7 +1,8 @@
 import { EntityRepository, Repository } from 'typeorm'
-import { v4 as uuid } from 'uuid'
+import { nanoid } from 'nanoid'
 import { RegisterInput } from 'src/auth/inputs/register.input'
 import { User } from '../entities/user.entity'
+import { UpdateProfileInput } from '../inputs/update-profile.input'
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -12,7 +13,7 @@ export class UserRepository extends Repository<User> {
     const { username, email, password } = registerInput
 
     const user = new User()
-    user.id = uuid()
+    user.id = nanoid()
     user.username = username
     user.email = email
     user.password = password
@@ -32,10 +33,6 @@ export class UserRepository extends Repository<User> {
     })
   }
 
-  async getByEmail(email: string) {
-    return this.findOne({ email })
-  }
-
   async getByResetPasswordToken(token: string) {
     return this.findOne({ resetPasswordToken: token })
   }
@@ -53,5 +50,50 @@ export class UserRepository extends Repository<User> {
     user.resetPasswordExpiration = expirationDate
 
     await this.save(user)
+  }
+
+  async activateAccount(user: User) {
+    user.isActive = true
+    await this.save(user)
+  }
+
+  async updateUserPassword(user: User, password: string) {
+    user.password = password
+    user.resetPasswordExpiration = undefined
+    user.resetPasswordToken = undefined
+
+    await this.save(user)
+  }
+
+  async updateUserCoverPhoto(coverPhoto: string, user: User) {
+    user.coverPhoto = coverPhoto
+
+    return this.save(user)
+  }
+
+  async updateUserProfilePhoto(profilePhoto: string, user: User) {
+    user.profilePhoto = profilePhoto
+
+    return this.save(user)
+  }
+
+  async updateUserProfile(updateProfileInput: UpdateProfileInput, user: User) {
+    if (updateProfileInput?.bio) {
+      user.bio = updateProfileInput.bio
+    }
+
+    if (updateProfileInput?.name) {
+      user.name = updateProfileInput.name
+    }
+
+    if (updateProfileInput?.phone) {
+      user.phone = updateProfileInput.phone
+    }
+
+    if (updateProfileInput?.birthday) {
+      user.birthday = updateProfileInput.birthday
+    }
+
+    return this.save(user)
   }
 }

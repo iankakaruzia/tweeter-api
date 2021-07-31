@@ -25,10 +25,6 @@ export class UsersService {
     return this.userRepository.getByUsernameOrEmail(usernameOrEmail)
   }
 
-  async getUserEmail(email: string): Promise<User> {
-    return this.userRepository.getByEmail(email)
-  }
-
   async getUserByResetPasswordToken(token: string): Promise<User> {
     return this.userRepository.getByResetPasswordToken(token)
   }
@@ -50,48 +46,22 @@ export class UsersService {
   }
 
   async updateUserProfile(updateProfileInput: UpdateProfileInput, user: User) {
-    if (updateProfileInput?.bio) {
-      user.bio = updateProfileInput.bio
-    }
-
-    if (updateProfileInput?.name) {
-      user.name = updateProfileInput.name
-    }
-
-    if (updateProfileInput?.phone) {
-      user.phone = updateProfileInput.phone
-    }
-
-    if (updateProfileInput?.birthday) {
-      user.birthday = updateProfileInput.birthday
-    }
-
-    return this.userRepository.save(user)
+    return this.userRepository.updateUserProfile(updateProfileInput, user)
   }
 
   async updateUserProfilePhoto(profilePhoto: string, user: User) {
-    user.profilePhoto = profilePhoto
-
-    return this.userRepository.save(user)
+    return this.userRepository.updateUserProfilePhoto(profilePhoto, user)
   }
 
   async updateUserCoverPhoto(coverPhoto: string, user: User) {
-    user.coverPhoto = coverPhoto
-
-    return this.userRepository.save(user)
+    return this.userRepository.updateUserCoverPhoto(coverPhoto, user)
   }
 
   async updateUserPassword(user: User, password: string) {
-    user.password = password
-    user.resetPasswordExpiration = undefined
-    user.resetPasswordToken = undefined
-
-    await this.userRepository.save(user)
+    await this.userRepository.updateUserPassword(user, password)
   }
 
   async activateAccount(user: User) {
-    user.isActive = true
-
-    await this.userRepository.save(user)
+    await this.userRepository.activateAccount(user)
   }
 }
