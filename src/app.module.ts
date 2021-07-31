@@ -40,7 +40,7 @@ import { configValidationSchema } from './config/config.schema'
         return {
           type: 'mongodb',
           url: configService.get('MONGODB_URL'),
-          synchronize: true,
+          synchronize: process.env.NODE_ENV === 'production' ? false : true,
           useUnifiedTopology: true,
           autoLoadEntities: true
         }
