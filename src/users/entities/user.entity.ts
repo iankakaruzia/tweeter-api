@@ -1,3 +1,4 @@
+import { Provider } from 'src/auth/enums/provider.enum'
 import {
   Column,
   CreateDateColumn,
@@ -17,8 +18,14 @@ export class User {
   @Index({ unique: true })
   id: string
 
-  @Column()
-  name: string
+  @Column({ nullable: true })
+  name?: string
+
+  @Column({ nullable: true })
+  provider?: Provider
+
+  @Column({ nullable: true })
+  providerId?: string
 
   @Column({ unique: true })
   email: string
@@ -26,23 +33,23 @@ export class User {
   @Column({ unique: true })
   username: string
 
-  @Column()
-  password: string
+  @Column({ nullable: true })
+  password?: string
 
-  @Column()
-  bio: string
+  @Column({ nullable: true })
+  bio?: string
 
-  @Column()
-  profilePhoto: string
+  @Column({ nullable: true })
+  profilePhoto?: string
 
-  @Column()
-  coverPhoto: string
+  @Column({ nullable: true })
+  coverPhoto?: string
 
-  @Column()
-  phone: string
+  @Column({ nullable: true })
+  phone?: string
 
-  @Column()
-  birthday: Date
+  @Column({ nullable: true })
+  birthday?: Date
 
   @Column()
   isActive: boolean
@@ -55,11 +62,11 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @Column()
-  resetPasswordToken: string
+  @Column({ nullable: true })
+  resetPasswordToken?: string
 
-  @Column()
-  resetPasswordExpiration: number
+  @Column({ nullable: true })
+  resetPasswordExpiration?: number
 
   @Column()
   confirmationToken: string

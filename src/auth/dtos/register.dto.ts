@@ -1,4 +1,3 @@
-import { Field, InputType } from '@nestjs/graphql'
 import {
   IsEmail,
   IsString,
@@ -6,17 +5,15 @@ import {
   MaxLength,
   MinLength
 } from 'class-validator'
+import { IsEqualTo } from 'src/common/decorators/is-equal-to.decorator'
 
-@InputType()
-export class RegisterInput {
+export class RegisterDto {
   @IsString()
   @MinLength(2)
   @MaxLength(20)
-  @Field()
   username: string
 
   @IsEmail()
-  @Field()
   email: string
 
   @IsString()
@@ -25,6 +22,14 @@ export class RegisterInput {
   @Matches(/(?:(?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
     message: 'Password too weak!'
   })
-  @Field()
   password: string
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(20)
+  @Matches(/(?:(?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message: 'Password too weak!'
+  })
+  @IsEqualTo('password')
+  passwordConfirmation: string
 }

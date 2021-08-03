@@ -10,7 +10,11 @@ import { UserRepository } from 'src/users/repositories/user.repository'
 import { MailModule } from 'src/mail/mail.module'
 import { AuthService } from './auth.service'
 import { JwtStrategy } from './strategies/jwt.strategy'
-import { AuthResolver } from './auth.resolver'
+import { FacebookStrategy } from './strategies/facebook.strategy'
+import { AuthController } from './auth.controller'
+import { GoogleStrategy } from './strategies/google.strategy'
+import { TwitterStrategy } from './strategies/twitter.strategy'
+import { GithubStrategy } from './strategies/github.strategy'
 
 @Module({
   imports: [
@@ -33,7 +37,16 @@ import { AuthResolver } from './auth.resolver'
     UsersModule,
     MailModule
   ],
-  providers: [AuthService, UsersService, JwtStrategy, AuthResolver],
-  exports: [JwtStrategy, PassportModule]
+  providers: [
+    AuthService,
+    UsersService,
+    JwtStrategy,
+    FacebookStrategy,
+    GoogleStrategy,
+    TwitterStrategy,
+    GithubStrategy
+  ],
+  exports: [JwtStrategy, PassportModule],
+  controllers: [AuthController]
 })
 export class AuthModule {}

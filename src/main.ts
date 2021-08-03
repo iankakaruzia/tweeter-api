@@ -1,10 +1,12 @@
 import { ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
+import { ConfigService } from '@nestjs/config'
 import { graphqlUploadExpress } from 'graphql-upload'
 import * as helmet from 'helmet'
 import * as basicAuth from 'express-basic-auth'
-import { ConfigService } from '@nestjs/config'
 import * as Sentry from '@sentry/node'
+import * as cookieParser from 'cookie-parser'
+import * as session from 'express-session'
 import { AppModule } from './app.module'
 
 const configService = new ConfigService()
@@ -17,6 +19,7 @@ async function bootstrap() {
     'SENTRY_TRACES_SAMPLE_RATE'
   )
   const PORT = configService.get('PORT')
+  const SESSION_SECRET = configService.get('SESSION_SECRET')
 
   const app = await NestFactory.create(AppModule)
 
@@ -28,7 +31,14 @@ async function bootstrap() {
   )
 
   app.enableCors()
-
+  app.use(cookieParser())
+  app.use(
+    session({
+      secret: SESSION_SECRET,
+      resave: false,
+      saveUninitialized: false
+    })
+  )
   app.useGlobalPipes(new ValidationPipe())
 
   app.use(graphqlUploadExpress({ maxFileSize: 1000000, maxFiles: 10 }))

@@ -1,43 +1,47 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { randomBytes, createHash } from 'crypto'
 import { CryptographyService } from 'src/cryptography/cryptography.service'
 import { User } from 'src/users/entities/user.entity'
 import { UsersService } from 'src/users/users.service'
-import { LoginInput } from './inputs/login.input'
-import { RegisterInput } from './inputs/register.input'
+import { LoginDto } from './dtos/login.dto'
+import { RegisterDto } from './dtos/register.dto'
 import { JwtPayload } from './interfaces/jwt-payload.interface'
+import { LoginReturnType } from './types/logged-user.type'
 
 @Injectable()
 export class AuthService {
   constructor(
     private cryptographyService: CryptographyService,
     private usersService: UsersService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private configService: ConfigService
   ) {}
 
-  async register(
-    registerInput: RegisterInput,
-    hashedConfirmationToken: string
-  ) {
-    const { password } = registerInput
+  async register(registerDto: RegisterDto, hashedConfirmationToken: string) {
+    const { password } = registerDto
     const hashedPassword = await this.cryptographyService.hash(password)
     return this.usersService.createUser(
       {
-        ...registerInput,
+        ...registerDto,
         password: hashedPassword
       },
       hashedConfirmationToken
     )
   }
 
-  async login(loginInput: LoginInput) {
-    const { usernameOrEmail, password } = loginInput
+  async login(loginDto: LoginDto) {
+    const { usernameOrEmail, password } = loginDto
     const user = await this.usersService.getUserByUsernameOrEmail(
       usernameOrEmail
     )
 
     if (!user) {
+      throw new UnauthorizedException('Invalid crendentials')
+    }
+
+    if (user.provider) {
       throw new UnauthorizedException('Invalid crendentials')
     }
 
@@ -56,7 +60,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid crendentials')
     }
 
-    return this.getAccessToken(user)
+    const { cookie, accessToken } = this.getCookieWithJwtToken(user)
+    return {
+      cookie,
+      accessToken,
+      user
+    }
   }
 
   async checkUser(email: string) {
@@ -112,7 +121,7 @@ export class AuthService {
     await this.usersService.activateAccount(user)
   }
 
-  private getAccessToken(user: User) {
+  getAccessToken(user: User) {
     const payload: JwtPayload = { username: user.username }
 
     const accessToken = this.jwtService.sign(payload)
@@ -125,6 +134,31 @@ export class AuthService {
         username: user.username,
         profilePhoto: user.profilePhoto || '',
         coverPhoto: user.coverPhoto || ''
+      }
+    }
+  }
+
+  getCookieWithJwtToken(user: User) {
+    const payload: JwtPayload = { username: user.username }
+
+    const accessToken = this.jwtService.sign(payload)
+    const cookie = `Authentication=${accessToken}; HttpOnly; Path=/; Max-Age=${this.configService.get(
+      'JWT_EXPIRES_IN'
+    )}`
+    return {
+      cookie,
+      accessToken
+    }
+  }
+
+  getLoggedInUserInfo(user: User, accessToken: string): LoginReturnType {
+    return {
+      accessToken,
+      user: {
+        email: user.email,
+        username: user.username,
+        name: user?.name,
+        profilePhoto: user?.profilePhoto
       }
     }
   }

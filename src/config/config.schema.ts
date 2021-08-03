@@ -20,5 +20,14 @@ export const configValidationSchema = Joi.object({
   BULL_UI_USERNAME: Joi.string().required(),
   BULL_UI_PASSWORD: Joi.string().required(),
   SENTRY_DNS: Joi.string().required(),
-  SENTRY_TRACES_SAMPLE_RATE: Joi.number().required()
+  SENTRY_TRACES_SAMPLE_RATE: Joi.number().required(),
+  GOOGLE_AUTH_CLIENT_ID: Joi.string().required(),
+  GOOGLE_AUTH_CLIENT_SECRET: Joi.string().required(),
+  FACEBOOK_AUTH_CLIENT_ID: Joi.string().required(),
+  FACEBOOK_AUTH_CLIENT_SECRET: Joi.string().required(),
+  TWITTER_AUTH_API_KEY: Joi.string().required(),
+  TWITTER_AUTH_API_SECRET_KEY: Joi.string().required(),
+  GITHUB_AUTH_CLIENT_ID: Joi.string().required(),
+  GITHUB_AUTH_CLIENT_SECRET: Joi.string().required(),
+  SESSION_SECRET: Joi.string().required()
 })

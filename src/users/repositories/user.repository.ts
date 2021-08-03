@@ -1,16 +1,18 @@
 import { EntityRepository, Repository } from 'typeorm'
 import { nanoid } from 'nanoid'
-import { RegisterInput } from 'src/auth/inputs/register.input'
 import { User } from '../entities/user.entity'
 import { UpdateProfileInput } from '../inputs/update-profile.input'
+import { Provider } from 'src/auth/enums/provider.enum'
+import { CreateUserByProviderParams } from 'src/auth/types/create-user-provider-params.type'
+import { RegisterDto } from 'src/auth/dtos/register.dto'
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
   async createUser(
-    registerInput: RegisterInput,
+    registerDto: RegisterDto,
     hashedConfirmationToken: string
   ): Promise<User> {
-    const { username, email, password } = registerInput
+    const { username, email, password } = registerDto
 
     const user = new User()
     user.id = nanoid()
@@ -95,5 +97,28 @@ export class UserRepository extends Repository<User> {
     }
 
     return this.save(user)
+  }
+
+  async findUserByProvider(provider: Provider, providerId: string) {
+    return this.findOne({ where: { provider, providerId } })
+  }
+
+  async createUserByProvider(
+    params: CreateUserByProviderParams
+  ): Promise<User> {
+    const { provider, providerId, email, name, photoUrl, username } = params
+    const user = new User()
+    user.id = nanoid()
+    user.username = username ?? nanoid(6)
+    user.email = email
+    user.name = name
+    user.profilePhoto = photoUrl
+    user.isActive = true
+    user.provider = provider
+    user.providerId = providerId
+
+    await this.save(user)
+
+    return user
   }
 }

@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { RegisterInput } from 'src/auth/inputs/register.input'
+import { RegisterDto } from 'src/auth/dtos/register.dto'
+import { Provider } from 'src/auth/enums/provider.enum'
+import { CreateUserByProviderParams } from 'src/auth/types/create-user-provider-params.type'
 import { User } from './entities/user.entity'
 import { UpdateProfileInput } from './inputs/update-profile.input'
 import { UserRepository } from './repositories/user.repository'
@@ -12,13 +14,10 @@ export class UsersService {
   ) {}
 
   async createUser(
-    registerInput: RegisterInput,
+    registerDto: RegisterDto,
     hashedConfirmationToken: string
   ): Promise<User> {
-    return this.userRepository.createUser(
-      registerInput,
-      hashedConfirmationToken
-    )
+    return this.userRepository.createUser(registerDto, hashedConfirmationToken)
   }
 
   async getUserByUsernameOrEmail(usernameOrEmail: string): Promise<User> {
@@ -63,5 +62,13 @@ export class UsersService {
 
   async activateAccount(user: User) {
     await this.userRepository.activateAccount(user)
+  }
+
+  async findUserByProvider(provider: Provider, providerId: string) {
+    return this.userRepository.findUserByProvider(provider, providerId)
+  }
+
+  async createUserByProvider(params: CreateUserByProviderParams) {
+    return this.userRepository.createUserByProvider(params)
   }
 }
