@@ -71,4 +71,12 @@ export class UsersService {
   async createUserByProvider(params: CreateUserByProviderParams) {
     return this.userRepository.createUserByProvider(params)
   }
+
+  async updateUsername(username: string, user: User) {
+    return this.userRepository.updateUsername(username, user)
+  }
+
+  async updateCurrentPassword(password: string, user: User) {
+    return this.userRepository.updateCurrentPassword(password, user)
+  }
 }

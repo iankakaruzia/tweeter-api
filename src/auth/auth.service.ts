@@ -7,6 +7,7 @@ import { User } from 'src/users/entities/user.entity'
 import { UsersService } from 'src/users/users.service'
 import { LoginDto } from './dtos/login.dto'
 import { RegisterDto } from './dtos/register.dto'
+import { UpdateCurrentPasswordDto } from './dtos/update-current-password.dto'
 import { JwtPayload } from './interfaces/jwt-payload.interface'
 import { LoginReturnType } from './types/logged-user.type'
 
@@ -121,6 +122,29 @@ export class AuthService {
     await this.usersService.activateAccount(user)
   }
 
+  async updateUsername(username: string, user: User) {
+    return this.usersService.updateUsername(username, user)
+  }
+
+  async updateCurrentPassword(
+    updateCurrentPasswordDto: UpdateCurrentPasswordDto,
+    user: User
+  ) {
+    const { currentPassword, password } = updateCurrentPasswordDto
+
+    const isValidPassword = await this.cryptographyService.compare(
+      currentPassword,
+      user.password
+    )
+
+    if (!isValidPassword) {
+      throw new UnauthorizedException('Invalid crendentials')
+    }
+
+    const hashedPassword = await this.cryptographyService.hash(password)
+    return this.usersService.updateCurrentPassword(hashedPassword, user)
+  }
+
   getAccessToken(user: User) {
     const payload: JwtPayload = { username: user.username }
 
@@ -149,6 +173,10 @@ export class AuthService {
       cookie,
       accessToken
     }
+  }
+
+  logout() {
+    return 'Authentication=; HttpOnly; Path=/; Max-Age=0'
   }
 
   getLoggedInUserInfo(user: User, accessToken: string): LoginReturnType {

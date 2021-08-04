@@ -6,6 +6,7 @@ import {
   HttpStatus,
   NotFoundException,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards
@@ -22,6 +23,10 @@ import { RegisterDto } from './dtos/register.dto'
 import { LoginReturnType } from './types/logged-user.type'
 import { ForgotPasswordDto } from './dtos/forgot-password.dto'
 import { ResetPasswordDto } from './dtos/reset-password.dto'
+import { GetUser } from './decorators/get-user.decorator'
+import { JwtAuthGuard } from './guards/jwt-auth.guard'
+import { UpdateUsernameDto } from './dtos/update-username.dto'
+import { UpdateCurrentPasswordDto } from './dtos/update-current-password.dto'
 
 @Controller()
 export class AuthController {
@@ -38,8 +43,10 @@ export class AuthController {
 
   @Get('/facebook/redirect')
   @UseGuards(AuthGuard('facebook'))
-  async facebookLoginRedirect(@Req() req: Request): Promise<LoginReturnType> {
-    const user = req.user as User
+  async facebookLoginRedirect(
+    @Req() req: Request,
+    @GetUser() user: User
+  ): Promise<LoginReturnType> {
     const { cookie, accessToken } = this.authService.getCookieWithJwtToken(user)
 
     req.res.setHeader('Set-Cookie', cookie)
@@ -54,8 +61,10 @@ export class AuthController {
 
   @Get('/google/redirect')
   @UseGuards(AuthGuard('google'))
-  async googleLoginRedirect(@Req() req: Request): Promise<LoginReturnType> {
-    const user = req.user as User
+  async googleLoginRedirect(
+    @Req() req: Request,
+    @GetUser() user: User
+  ): Promise<LoginReturnType> {
     const { cookie, accessToken } = this.authService.getCookieWithJwtToken(user)
 
     req.res.setHeader('Set-Cookie', cookie)
@@ -70,8 +79,10 @@ export class AuthController {
 
   @Get('/twitter/redirect')
   @UseGuards(AuthGuard('twitter'))
-  async twitterLoginRedirect(@Req() req: Request): Promise<LoginReturnType> {
-    const user = req.user as User
+  async twitterLoginRedirect(
+    @Req() req: Request,
+    @GetUser() user: User
+  ): Promise<LoginReturnType> {
     const { cookie, accessToken } = this.authService.getCookieWithJwtToken(user)
 
     req.res.setHeader('Set-Cookie', cookie)
@@ -86,8 +97,10 @@ export class AuthController {
 
   @Get('/github/redirect')
   @UseGuards(AuthGuard('github'))
-  async githubLoginRedirect(@Req() req: Request): Promise<LoginReturnType> {
-    const user = req.user as User
+  async githubLoginRedirect(
+    @Req() req: Request,
+    @GetUser() user: User
+  ): Promise<LoginReturnType> {
     const { cookie, accessToken } = this.authService.getCookieWithJwtToken(user)
 
     req.res.setHeader('Set-Cookie', cookie)
@@ -182,5 +195,41 @@ export class AuthController {
     return {
       message: 'Password updated! Please log in to enjoy our platform.'
     }
+  }
+
+  @Patch('/user/username')
+  @UseGuards(JwtAuthGuard)
+  async updateUsername(
+    @Body() updateUsernameDto: UpdateUsernameDto,
+    @GetUser() user: User,
+    @Req() req: Request
+  ) {
+    const { username } = updateUsernameDto
+    const updatedUser = await this.authService.updateUsername(username, user)
+
+    const { cookie, accessToken } =
+      this.authService.getCookieWithJwtToken(updatedUser)
+
+    req.res.setHeader('Set-Cookie', cookie)
+    return this.authService.getLoggedInUserInfo(user, accessToken)
+  }
+
+  @Patch('/user/password')
+  @UseGuards(JwtAuthGuard)
+  async updateCurrentPassword(
+    @Body() updateCurrentPasswordDto: UpdateCurrentPasswordDto,
+    @GetUser() user: User,
+    @Req() req: Request
+  ) {
+    await this.authService.updateCurrentPassword(updateCurrentPasswordDto, user)
+    const { cookie, accessToken } = this.authService.getCookieWithJwtToken(user)
+
+    req.res.setHeader('Set-Cookie', cookie)
+    return this.authService.getLoggedInUserInfo(user, accessToken)
+  }
+
+  @Post('/logout')
+  async logout(@Req() req: Request) {
+    req.res.setHeader('Set-Cookie', this.authService.logout())
   }
 }

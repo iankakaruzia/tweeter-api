@@ -1,8 +1,4 @@
-import {
-  InternalServerErrorException,
-  UseGuards,
-  UseInterceptors
-} from '@nestjs/common'
+import { UseGuards, UseInterceptors } from '@nestjs/common'
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql'
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator'
 import { GqlAuthGuard } from 'src/auth/guards/gql-auth.guard'
@@ -35,11 +31,7 @@ export class UsersResolver {
     @Args('updateProfileInput') updateProfileInput: UpdateProfileInput,
     @CurrentUser() user: User
   ) {
-    try {
-      return await this.usersService.updateUserProfile(updateProfileInput, user)
-    } catch (error) {
-      throw new InternalServerErrorException(error)
-    }
+    return this.usersService.updateUserProfile(updateProfileInput, user)
   }
 
   @Mutation((_returns) => UserType)
@@ -49,26 +41,19 @@ export class UsersResolver {
     updateProfilePhotoInput: UpdateProfilePhotoInput,
     @CurrentUser() user: User
   ) {
-    try {
-      const { photo } = updateProfilePhotoInput
-      const { createReadStream } = await photo
-      const photoStream = createReadStream()
+    const { photo } = updateProfilePhotoInput
+    const { createReadStream } = await photo
+    const photoStream = createReadStream()
 
-      const { secure_url } = await this.uploadService.uploadStream(
-        photoStream,
-        {
-          use_filename: true,
-          filename_override: user.username,
-          unique_filename: false,
-          folder: 'profile',
-          tags: ['profile'],
-          allowed_formats: ['jpg', 'png']
-        }
-      )
-      return await this.usersService.updateUserProfilePhoto(secure_url, user)
-    } catch (error) {
-      throw new InternalServerErrorException(error)
-    }
+    const { secure_url } = await this.uploadService.uploadStream(photoStream, {
+      use_filename: true,
+      filename_override: user.username,
+      unique_filename: false,
+      folder: 'profile',
+      tags: ['profile'],
+      allowed_formats: ['jpg', 'png']
+    })
+    return this.usersService.updateUserProfilePhoto(secure_url, user)
   }
 
   @Mutation((_returns) => UserType)
@@ -78,22 +63,15 @@ export class UsersResolver {
     updateCoverPhotoInput: UpdateCoverPhotoInput,
     @CurrentUser() user: User
   ) {
-    try {
-      const { photo } = updateCoverPhotoInput
-      const { createReadStream } = await photo
-      const photoStream = createReadStream()
+    const { photo } = updateCoverPhotoInput
+    const { createReadStream } = await photo
+    const photoStream = createReadStream()
 
-      const { secure_url } = await this.uploadService.uploadStream(
-        photoStream,
-        {
-          folder: 'cover',
-          tags: ['cover'],
-          allowed_formats: ['jpg', 'png']
-        }
-      )
-      return await this.usersService.updateUserCoverPhoto(secure_url, user)
-    } catch (error) {
-      throw new InternalServerErrorException(error)
-    }
+    const { secure_url } = await this.uploadService.uploadStream(photoStream, {
+      folder: 'cover',
+      tags: ['cover'],
+      allowed_formats: ['jpg', 'png']
+    })
+    return await this.usersService.updateUserCoverPhoto(secure_url, user)
   }
 }
