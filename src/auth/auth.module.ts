@@ -4,8 +4,6 @@ import { JwtModule } from '@nestjs/jwt'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { CryptographyModule } from 'src/cryptography/cryptography.module'
-import { UsersService } from 'src/users/users.service'
-import { UsersModule } from 'src/users/users.module'
 import { UserRepository } from 'src/users/repositories/user.repository'
 import { MailModule } from 'src/mail/mail.module'
 import { AuthService } from './auth.service'
@@ -27,19 +25,17 @@ import { GithubStrategy } from './strategies/github.strategy'
         return {
           secret: configService.get('JWT_SECRET'),
           signOptions: {
-            expiresIn: configService.get('JWT_EXPIRES_IN')
+            expiresIn: `${configService.get('JWT_EXPIRES_IN')}s`
           }
         }
       }
     }),
     TypeOrmModule.forFeature([UserRepository]),
     CryptographyModule,
-    UsersModule,
     MailModule
   ],
   providers: [
     AuthService,
-    UsersService,
     JwtStrategy,
     FacebookStrategy,
     GoogleStrategy,

@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
+import { InjectRepository } from '@nestjs/typeorm'
 import { Profile, OAuth2Strategy } from 'passport-google-oauth'
-import { UsersService } from 'src/users/users.service'
+import { UserRepository } from 'src/users/repositories/user.repository'
 import { Provider } from '../enums/provider.enum'
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(OAuth2Strategy, 'google') {
   constructor(
     private configService: ConfigService,
-    private usersService: UsersService
+    @InjectRepository(UserRepository) private userRepository: UserRepository
   ) {
     super({
       clientID: configService.get('GOOGLE_AUTH_CLIENT_ID'),
@@ -26,10 +27,10 @@ export class GoogleStrategy extends PassportStrategy(OAuth2Strategy, 'google') {
   ) {
     const { id, name, emails, photos } = profile
 
-    let user = await this.usersService.findUserByProvider(Provider.GOOGLE, id)
+    let user = await this.userRepository.findUserByProvider(Provider.GOOGLE, id)
 
     if (!user) {
-      user = await this.usersService.createUserByProvider({
+      user = await this.userRepository.createUserByProvider({
         provider: Provider.GOOGLE,
         providerId: id,
         name: name.givenName,

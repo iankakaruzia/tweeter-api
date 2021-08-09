@@ -1,5 +1,6 @@
 import { UseGuards, UseInterceptors } from '@nestjs/common'
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql'
+import { InjectRepository } from '@nestjs/typeorm'
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator'
 import { GqlAuthGuard } from 'src/auth/guards/gql-auth.guard'
 import { SentryInterceptor } from 'src/common/interceptors/sentry.interceptor'
@@ -9,14 +10,14 @@ import { UpdateCoverPhotoInput } from './inputs/update-cover-photo.input'
 import { UpdateProfilePhotoInput } from './inputs/update-profile-photo.input'
 import { UpdateProfileInput } from './inputs/update-profile.input'
 import { UserType } from './models/user.type'
-import { UsersService } from './users.service'
+import { UserRepository } from './repositories/user.repository'
 
 @UseInterceptors(SentryInterceptor)
 @Resolver((_of: any) => UserType)
 export class UsersResolver {
   constructor(
-    private usersService: UsersService,
-    private uploadService: UploadService
+    private uploadService: UploadService,
+    @InjectRepository(UserRepository) private userRepository: UserRepository
   ) {}
 
   @Query((_returns) => UserType)
@@ -31,7 +32,7 @@ export class UsersResolver {
     @Args('updateProfileInput') updateProfileInput: UpdateProfileInput,
     @CurrentUser() user: User
   ) {
-    return this.usersService.updateUserProfile(updateProfileInput, user)
+    return this.userRepository.updateUserProfile(updateProfileInput, user)
   }
 
   @Mutation((_returns) => UserType)
@@ -44,7 +45,6 @@ export class UsersResolver {
     const { photo } = updateProfilePhotoInput
     const { createReadStream } = await photo
     const photoStream = createReadStream()
-
     const { secure_url } = await this.uploadService.uploadStream(photoStream, {
       use_filename: true,
       filename_override: user.username,
@@ -53,7 +53,7 @@ export class UsersResolver {
       tags: ['profile'],
       allowed_formats: ['jpg', 'png']
     })
-    return this.usersService.updateUserProfilePhoto(secure_url, user)
+    return this.userRepository.updateUserProfilePhoto(secure_url, user)
   }
 
   @Mutation((_returns) => UserType)
@@ -66,12 +66,11 @@ export class UsersResolver {
     const { photo } = updateCoverPhotoInput
     const { createReadStream } = await photo
     const photoStream = createReadStream()
-
     const { secure_url } = await this.uploadService.uploadStream(photoStream, {
       folder: 'cover',
       tags: ['cover'],
       allowed_formats: ['jpg', 'png']
     })
-    return await this.usersService.updateUserCoverPhoto(secure_url, user)
+    return await this.userRepository.updateUserCoverPhoto(secure_url, user)
   }
 }

@@ -27,12 +27,15 @@ import { GetUser } from './decorators/get-user.decorator'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { UpdateUsernameDto } from './dtos/update-username.dto'
 import { UpdateCurrentPasswordDto } from './dtos/update-current-password.dto'
+import { InjectRepository } from '@nestjs/typeorm'
+import { UserRepository } from 'src/users/repositories/user.repository'
 
 @Controller()
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private mailService: MailService
+    private mailService: MailService,
+    @InjectRepository(UserRepository) private userRepository: UserRepository
   ) {}
 
   @Get('/facebook')
@@ -47,10 +50,9 @@ export class AuthController {
     @Req() req: Request,
     @GetUser() user: User
   ): Promise<LoginReturnType> {
-    const { cookie, accessToken } = this.authService.getCookieWithJwtToken(user)
-
+    const { cookie } = this.authService.getCookieWithJwtToken(user)
     req.res.setHeader('Set-Cookie', cookie)
-    return this.authService.getLoggedInUserInfo(user, accessToken)
+    return this.authService.getLoggedInUserInfo(user)
   }
 
   @Get('/google')
@@ -65,10 +67,9 @@ export class AuthController {
     @Req() req: Request,
     @GetUser() user: User
   ): Promise<LoginReturnType> {
-    const { cookie, accessToken } = this.authService.getCookieWithJwtToken(user)
-
+    const { cookie } = this.authService.getCookieWithJwtToken(user)
     req.res.setHeader('Set-Cookie', cookie)
-    return this.authService.getLoggedInUserInfo(user, accessToken)
+    return this.authService.getLoggedInUserInfo(user)
   }
 
   @Get('/twitter')
@@ -83,10 +84,9 @@ export class AuthController {
     @Req() req: Request,
     @GetUser() user: User
   ): Promise<LoginReturnType> {
-    const { cookie, accessToken } = this.authService.getCookieWithJwtToken(user)
-
+    const { cookie } = this.authService.getCookieWithJwtToken(user)
     req.res.setHeader('Set-Cookie', cookie)
-    return this.authService.getLoggedInUserInfo(user, accessToken)
+    return this.authService.getLoggedInUserInfo(user)
   }
 
   @Get('/github')
@@ -101,10 +101,9 @@ export class AuthController {
     @Req() req: Request,
     @GetUser() user: User
   ): Promise<LoginReturnType> {
-    const { cookie, accessToken } = this.authService.getCookieWithJwtToken(user)
-
+    const { cookie } = this.authService.getCookieWithJwtToken(user)
     req.res.setHeader('Set-Cookie', cookie)
-    return this.authService.getLoggedInUserInfo(user, accessToken)
+    return this.authService.getLoggedInUserInfo(user)
   }
 
   @Post('/login')
@@ -112,26 +111,22 @@ export class AuthController {
     @Body() loginDto: LoginDto,
     @Req() req: Request
   ): Promise<LoginReturnType> {
-    const { accessToken, cookie, user } = await this.authService.login(loginDto)
+    const { cookie, user } = await this.authService.login(loginDto)
     req.res.setHeader('Set-Cookie', cookie)
-    return this.authService.getLoggedInUserInfo(user, accessToken)
+    return this.authService.getLoggedInUserInfo(user)
   }
 
   @Post('/register')
   async register(@Body() registerDto: RegisterDto) {
     const confirmationToken = randomBytes(32).toString('hex')
-
     const hashedConfirmationToken = createHash('sha256')
       .update(confirmationToken)
       .digest('hex')
-
     const user = await this.authService.register(
       registerDto,
       hashedConfirmationToken
     )
-
     await this.mailService.sendConfirmationEmail(user, confirmationToken)
-
     return {
       message: `Almost there! We've sent an email to ${user.email}. Open it up to activate your account.`
     }
@@ -140,17 +135,13 @@ export class AuthController {
   @Post('/confirm-account/:token')
   async confirmAccount(@Param('token') token: string) {
     const user = await this.authService.getUserByConfirmationToken(token)
-
     if (!user) {
       throw new NotFoundException('Invalid confirmation token!')
     }
-
     if (user.isActive) {
       throw new BadRequestException('Account Already Activated!')
     }
-
-    await this.authService.activateAccount(user)
-
+    await this.userRepository.activateAccount(user)
     return {
       message: 'Account Successfully Activated!'
     }
@@ -159,16 +150,12 @@ export class AuthController {
   @Post('/forgot-password')
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     const { email } = forgotPasswordDto
-    const user = await this.authService.checkUser(email)
-
+    const user = await this.userRepository.getByUsernameOrEmail(email)
     if (!user) {
       throw new BadRequestException()
     }
-
     const resetToken = await this.authService.createPasswordResetToken(user)
-
     await this.mailService.sendForgotPasswordEmail(user, resetToken)
-
     return {
       message: 'Token sent to email!'
     }
@@ -181,17 +168,13 @@ export class AuthController {
   ) {
     const { password } = resetPasswordDto
     const user = await this.authService.getUserByResetPasswordToken(token)
-
     const isValidToken = Date.now() <= user?.resetPasswordExpiration
-
     if (!user || !isValidToken) {
       throw new NotFoundException(
         'Invalid reset token! Please request a new token again.'
       )
     }
-
     await this.authService.updateUserPassword(user, password)
-
     return {
       message: 'Password updated! Please log in to enjoy our platform.'
     }
@@ -205,13 +188,10 @@ export class AuthController {
     @Req() req: Request
   ) {
     const { username } = updateUsernameDto
-    const updatedUser = await this.authService.updateUsername(username, user)
-
-    const { cookie, accessToken } =
-      this.authService.getCookieWithJwtToken(updatedUser)
-
+    const updatedUser = await this.userRepository.updateUsername(username, user)
+    const { cookie } = this.authService.getCookieWithJwtToken(updatedUser)
     req.res.setHeader('Set-Cookie', cookie)
-    return this.authService.getLoggedInUserInfo(user, accessToken)
+    return this.authService.getLoggedInUserInfo(user)
   }
 
   @Patch('/user/password')
@@ -222,14 +202,19 @@ export class AuthController {
     @Req() req: Request
   ) {
     await this.authService.updateCurrentPassword(updateCurrentPasswordDto, user)
-    const { cookie, accessToken } = this.authService.getCookieWithJwtToken(user)
-
+    const { cookie } = this.authService.getCookieWithJwtToken(user)
     req.res.setHeader('Set-Cookie', cookie)
-    return this.authService.getLoggedInUserInfo(user, accessToken)
+    return this.authService.getLoggedInUserInfo(user)
   }
 
   @Post('/logout')
   async logout(@Req() req: Request) {
     req.res.setHeader('Set-Cookie', this.authService.logout())
+  }
+
+  @Get('/validate')
+  @UseGuards(JwtAuthGuard)
+  async validade(@GetUser() user: User) {
+    return this.authService.getLoggedInUserInfo(user)
   }
 }

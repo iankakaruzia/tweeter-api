@@ -6,6 +6,5 @@ type LoggedUserType = {
 }
 
 export type LoginReturnType = {
-  accessToken: string
   user: LoggedUserType
 }
