@@ -8,6 +8,7 @@ import * as Sentry from '@sentry/node'
 import * as cookieParser from 'cookie-parser'
 import * as session from 'express-session'
 import { AppModule } from './app.module'
+import { MongoExceptionFilter } from './common/filters/mongo-exception.filter'
 
 const configService = new ConfigService()
 
@@ -30,7 +31,12 @@ async function bootstrap() {
     })
   )
 
-  app.enableCors()
+  app.enableCors({
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true
+  })
+
   app.use(cookieParser())
   app.use(
     session({
@@ -40,6 +46,7 @@ async function bootstrap() {
     })
   )
   app.useGlobalPipes(new ValidationPipe())
+  app.useGlobalFilters(new MongoExceptionFilter())
 
   app.use(graphqlUploadExpress({ maxFileSize: 1000000, maxFiles: 10 }))
 

@@ -77,6 +77,7 @@
     "@types/faker": "^5.5.7",
     "@types/graphql-upload": "^8.0.6",
     "@types/jest": "^26.0.24",
+    "@types/mongodb": "^4.0.7",
     "@types/node": "^16.4.7",
     "@types/nodemailer": "^6.4.4",
     "@types/passport-facebook": "^2.1.11",
