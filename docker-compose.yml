@@ -1,22 +1,5 @@
 version: "3.9"
 services:
-  api:
-    build:
-      dockerfile: Dockerfile
-      context: .
-      target: development
-    volumes:
-      - .:/usr/src/app
-      - ./usr/src/app/node_modules
-    command: yarn start:dev
-    depends_on:
-      - mongo
-      - redis
-    env_file:
-      - .env
-    ports:
-      - 8080:8080
-
   mongo:
     image: mongo
     ports:

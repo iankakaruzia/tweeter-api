@@ -13,7 +13,6 @@ export class UserRepository extends Repository<User> {
     hashedConfirmationToken: string
   ): Promise<User> {
     const { username, email, password } = registerDto
-
     const user = new User()
     user.id = nanoid()
     user.username = username
@@ -21,9 +20,7 @@ export class UserRepository extends Repository<User> {
     user.password = password
     user.isActive = false
     user.confirmationToken = hashedConfirmationToken
-
     await this.save(user)
-
     return user
   }
 
@@ -50,7 +47,6 @@ export class UserRepository extends Repository<User> {
   ) {
     user.resetPasswordToken = resetToken
     user.resetPasswordExpiration = expirationDate
-
     await this.save(user)
   }
 
@@ -61,41 +57,23 @@ export class UserRepository extends Repository<User> {
 
   async updateUserPassword(user: User, password: string) {
     user.password = password
-    user.resetPasswordExpiration = undefined
-    user.resetPasswordToken = undefined
-
+    user.resetPasswordExpiration = null
+    user.resetPasswordToken = null
     await this.save(user)
   }
 
   async updateUserCoverPhoto(coverPhoto: string, user: User) {
     user.coverPhoto = coverPhoto
-
     return this.save(user)
   }
 
   async updateUserProfilePhoto(profilePhoto: string, user: User) {
     user.profilePhoto = profilePhoto
-
     return this.save(user)
   }
 
   async updateUserProfile(updateProfileInput: UpdateProfileInput, user: User) {
-    if (updateProfileInput?.bio) {
-      user.bio = updateProfileInput.bio
-    }
-
-    if (updateProfileInput?.name) {
-      user.name = updateProfileInput.name
-    }
-
-    if (updateProfileInput?.phone) {
-      user.phone = updateProfileInput.phone
-    }
-
-    if (updateProfileInput?.birthday) {
-      user.birthday = updateProfileInput.birthday
-    }
-
+    Object.assign(user, updateProfileInput)
     return this.save(user)
   }
 
@@ -116,9 +94,7 @@ export class UserRepository extends Repository<User> {
     user.isActive = true
     user.provider = provider
     user.providerId = providerId
-
     await this.save(user)
-
     return user
   }
 

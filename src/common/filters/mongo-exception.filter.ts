@@ -17,7 +17,7 @@ export class MongoExceptionFilter implements ExceptionFilter {
     } else {
       response
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json({ message: 'Internal Servrt Error.' })
+        .json({ message: 'Internal Server Error.' })
     }
   }
 }

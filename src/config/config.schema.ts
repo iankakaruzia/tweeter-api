@@ -15,6 +15,7 @@ export const configValidationSchema = Joi.object({
   CLIENT_RESET_PASSWORD_URL: Joi.string().required(),
   CLIENT_CONFIRMATION_URL: Joi.string().required(),
   CLIENT_URL: Joi.string().required(),
+  SOCIAL_LOGIN_REDIRECT_URL: Joi.string().required(),
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),
   BULL_UI_USERNAME: Joi.string().required(),

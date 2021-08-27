@@ -45,7 +45,7 @@ async function bootstrap() {
       saveUninitialized: false
     })
   )
-  app.useGlobalPipes(new ValidationPipe())
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }))
   app.useGlobalFilters(new MongoExceptionFilter())
 
   app.use(graphqlUploadExpress({ maxFileSize: 1000000, maxFiles: 10 }))

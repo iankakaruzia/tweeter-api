@@ -9,9 +9,9 @@ import {
   Patch,
   Post,
   Req,
+  UseFilters,
   UseGuards
 } from '@nestjs/common'
-import { AuthGuard } from '@nestjs/passport'
 import { Request } from 'express'
 import { randomBytes, createHash } from 'crypto'
 
@@ -29,81 +29,92 @@ import { UpdateUsernameDto } from './dtos/update-username.dto'
 import { UpdateCurrentPasswordDto } from './dtos/update-current-password.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { UserRepository } from 'src/users/repositories/user.repository'
+import { TwitterGuard } from './guards/twitter.guard'
+import { GoogleGuard } from './guards/google.guard'
+import { AuthHttpExceptionFilter } from './filters/auth-http-exception.filter'
+import { FacebookGuard } from './guards/facebook.guard'
+import { GithubGuard } from './guards/github.guard'
+import { ConfigService } from '@nestjs/config'
 
 @Controller()
 export class AuthController {
   constructor(
     private authService: AuthService,
     private mailService: MailService,
+    private configService: ConfigService,
     @InjectRepository(UserRepository) private userRepository: UserRepository
   ) {}
 
   @Get('/facebook')
-  @UseGuards(AuthGuard('facebook'))
+  @UseGuards(new FacebookGuard())
   async facebookLogin() {
     return HttpStatus.OK
   }
 
   @Get('/facebook/redirect')
-  @UseGuards(AuthGuard('facebook'))
-  async facebookLoginRedirect(
-    @Req() req: Request,
-    @GetUser() user: User
-  ): Promise<LoginReturnType> {
+  @UseGuards(new FacebookGuard())
+  @UseFilters(new AuthHttpExceptionFilter())
+  async facebookLoginRedirect(@Req() req: Request, @GetUser() user: User) {
     const { cookie } = this.authService.getCookieWithJwtToken(user)
+    const redirectUrl = this.configService.get<string>(
+      'SOCIAL_LOGIN_REDIRECT_URL'
+    )
     req.res.setHeader('Set-Cookie', cookie)
-    return this.authService.getLoggedInUserInfo(user)
+    req.res.redirect(`${redirectUrl}?status=success`)
   }
 
   @Get('/google')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(new GoogleGuard())
   async googleLogin() {
     return HttpStatus.OK
   }
 
   @Get('/google/redirect')
-  @UseGuards(AuthGuard('google'))
-  async googleLoginRedirect(
-    @Req() req: Request,
-    @GetUser() user: User
-  ): Promise<LoginReturnType> {
+  @UseGuards(new GoogleGuard())
+  @UseFilters(new AuthHttpExceptionFilter())
+  async googleLoginRedirect(@Req() req: Request, @GetUser() user: User) {
     const { cookie } = this.authService.getCookieWithJwtToken(user)
+    const redirectUrl = this.configService.get<string>(
+      'SOCIAL_LOGIN_REDIRECT_URL'
+    )
     req.res.setHeader('Set-Cookie', cookie)
-    return this.authService.getLoggedInUserInfo(user)
+    req.res.redirect(`${redirectUrl}?status=success`)
   }
 
   @Get('/twitter')
-  @UseGuards(AuthGuard('twitter'))
+  @UseGuards(new TwitterGuard())
   async twitterLogin() {
     return HttpStatus.OK
   }
 
   @Get('/twitter/redirect')
-  @UseGuards(AuthGuard('twitter'))
-  async twitterLoginRedirect(
-    @Req() req: Request,
-    @GetUser() user: User
-  ): Promise<LoginReturnType> {
+  @UseGuards(new TwitterGuard())
+  @UseFilters(new AuthHttpExceptionFilter())
+  async twitterLoginRedirect(@Req() req: Request, @GetUser() user: User) {
     const { cookie } = this.authService.getCookieWithJwtToken(user)
+    const redirectUrl = this.configService.get<string>(
+      'SOCIAL_LOGIN_REDIRECT_URL'
+    )
     req.res.setHeader('Set-Cookie', cookie)
-    return this.authService.getLoggedInUserInfo(user)
+    req.res.redirect(`${redirectUrl}?status=success`)
   }
 
   @Get('/github')
-  @UseGuards(AuthGuard('github'))
+  @UseGuards(new GithubGuard())
   async githubLogin() {
     return HttpStatus.OK
   }
 
   @Get('/github/redirect')
-  @UseGuards(AuthGuard('github'))
-  async githubLoginRedirect(
-    @Req() req: Request,
-    @GetUser() user: User
-  ): Promise<LoginReturnType> {
+  @UseGuards(new GithubGuard())
+  @UseFilters(new AuthHttpExceptionFilter())
+  async githubLoginRedirect(@Req() req: Request, @GetUser() user: User) {
     const { cookie } = this.authService.getCookieWithJwtToken(user)
+    const redirectUrl = this.configService.get<string>(
+      'SOCIAL_LOGIN_REDIRECT_URL'
+    )
     req.res.setHeader('Set-Cookie', cookie)
-    return this.authService.getLoggedInUserInfo(user)
+    req.res.redirect(`${redirectUrl}?status=success`)
   }
 
   @Post('/login')
@@ -135,15 +146,16 @@ export class AuthController {
   @Post('/confirm-account/:token')
   async confirmAccount(@Param('token') token: string) {
     const user = await this.authService.getUserByConfirmationToken(token)
+    if (user?.isActive) {
+      throw new BadRequestException('Account Already Activated!')
+    }
     if (!user) {
       throw new NotFoundException('Invalid confirmation token!')
     }
-    if (user.isActive) {
-      throw new BadRequestException('Account Already Activated!')
-    }
     await this.userRepository.activateAccount(user)
     return {
-      message: 'Account Successfully Activated!'
+      message:
+        'Account Successfully Activated! You can now log into our application.'
     }
   }
 
