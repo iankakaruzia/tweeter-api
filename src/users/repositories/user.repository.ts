@@ -14,11 +14,9 @@ export class UserRepository extends Repository<User> {
   ): Promise<User> {
     const { username, email, password } = registerDto
     const user = new User()
-    user.id = nanoid()
     user.username = username
     user.email = email
     user.password = password
-    user.isActive = false
     user.confirmationToken = hashedConfirmationToken
     await this.save(user)
     return user
@@ -26,9 +24,7 @@ export class UserRepository extends Repository<User> {
 
   async getByUsernameOrEmail(usernameOrEmail: string) {
     return this.findOne({
-      where: {
-        $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }]
-      }
+      where: [{ email: usernameOrEmail }, { username: usernameOrEmail }]
     })
   }
 
@@ -86,7 +82,6 @@ export class UserRepository extends Repository<User> {
   ): Promise<User> {
     const { provider, providerId, email, name, photoUrl, username } = params
     const user = new User()
-    user.id = nanoid()
     user.username = username ?? nanoid(6)
     user.email = email
     user.name = name

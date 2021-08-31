@@ -36,4 +36,4 @@ lerna-debug.log*
 # Environment Variables
 .env
 
-.mongo-volume
+data

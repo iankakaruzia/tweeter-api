@@ -4,13 +4,17 @@ import {
   ExceptionFilter,
   HttpStatus
 } from '@nestjs/common'
-import { MongoError } from 'mongodb'
+import { TypeORMError } from 'typeorm'
 
-@Catch(MongoError)
-export class MongoExceptionFilter implements ExceptionFilter {
-  catch(exception: MongoError, host: ArgumentsHost): void {
+@Catch(TypeORMError)
+export class TypeORMExceptionFilter implements ExceptionFilter {
+  catch(exception: TypeORMError, host: ArgumentsHost): void {
     const response = host.switchToHttp().getResponse()
-    if (exception.code === 11000) {
+    if (
+      exception.message.includes(
+        'duplicate key value violates unique constraint'
+      )
+    ) {
       response.status(HttpStatus.CONFLICT).json({
         message: 'The request could not be completed due to a conflict.'
       })

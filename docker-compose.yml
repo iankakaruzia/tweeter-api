@@ -1,13 +1,41 @@
 version: "3.9"
 services:
-  mongo:
-    image: mongo
-    ports:
-      - 27017:27017
+  postgres:
+    container_name: postgresql_db
+    image: postgres
+    restart: always
     volumes:
-      - ./.mongo-volume:/data/db
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: tweeter
+      POSTGRES_PASSWORD: tweeter123
+      POSTGRES_DB: tweeter
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres-compose-network
+
+  pgadmin:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    restart: always
+    volumes:
+      - ./data/pgadmin-data:/var/lib/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@tweeter.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - postgres-compose-network
 
   redis:
     image: redis
     ports:
       - 6379:6379
+
+networks:
+  postgres-compose-network:
+    driver: bridge

@@ -4,18 +4,13 @@ import {
   CreateDateColumn,
   Entity,
   Index,
-  ObjectIdColumn,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   UpdateDateColumn
 } from 'typeorm'
 
 @Entity({ name: 'users' })
 export class User {
-  @ObjectIdColumn()
-  _id: string
-
-  @PrimaryColumn()
-  @Index({ unique: true })
+  @PrimaryGeneratedColumn()
   id: string
 
   @Column({ nullable: true })
@@ -24,12 +19,15 @@ export class User {
   @Column({ nullable: true })
   provider?: Provider
 
-  @Column({ nullable: true })
+  @Index('provider_idx', { unique: true })
+  @Column({ nullable: true, name: 'provider_id' })
   providerId?: string
 
+  @Index('email_idx', { unique: true })
   @Column({ unique: true })
   email: string
 
+  @Index('username_idx', { unique: true })
   @Column({ unique: true })
   username: string
 
@@ -39,10 +37,10 @@ export class User {
   @Column({ nullable: true })
   bio?: string
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, name: 'profile_photo' })
   profilePhoto?: string
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, name: 'cover_photo' })
   coverPhoto?: string
 
   @Column({ nullable: true })
@@ -51,23 +49,23 @@ export class User {
   @Column({ nullable: true })
   birthday?: Date
 
-  @Column()
+  @Column({ default: false, name: 'is_active' })
   isActive: boolean
 
   @Column()
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date
 
   @Column()
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, name: 'reset_password_token' })
   resetPasswordToken?: string
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, name: 'reset_password_expiration' })
   resetPasswordExpiration?: number
 
-  @Column()
+  @Column({ nullable: true, name: 'confirmation_token' })
   confirmationToken: string
 }

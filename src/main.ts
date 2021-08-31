@@ -8,7 +8,7 @@ import * as Sentry from '@sentry/node'
 import * as cookieParser from 'cookie-parser'
 import * as session from 'express-session'
 import { AppModule } from './app.module'
-import { MongoExceptionFilter } from './common/filters/mongo-exception.filter'
+import { TypeORMExceptionFilter } from './common/filters/typeorm-exception.filter'
 
 const configService = new ConfigService()
 
@@ -46,7 +46,7 @@ async function bootstrap() {
     })
   )
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }))
-  app.useGlobalFilters(new MongoExceptionFilter())
+  app.useGlobalFilters(new TypeORMExceptionFilter())
 
   app.use(graphqlUploadExpress({ maxFileSize: 1000000, maxFiles: 10 }))
 

@@ -38,11 +38,15 @@ import { configValidationSchema } from './config/config.schema'
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
         return {
-          type: 'mongodb',
-          url: configService.get('MONGODB_URL'),
-          synchronize: process.env.NODE_ENV === 'production' ? false : true,
-          useUnifiedTopology: true,
-          autoLoadEntities: true
+          type: 'postgres',
+          host: configService.get('POSTGRES_HOST'),
+          port: configService.get('POSTGRES_PORT'),
+          username: configService.get('POSTGRES_USER'),
+          password: configService.get('POSTGRES_PASSWORD'),
+          database: configService.get('POSTGRES_DB'),
+          autoLoadEntities: true,
+          synchronize:
+            configService.get('NODE_ENV') === 'production' ? false : true
         }
       }
     }),
