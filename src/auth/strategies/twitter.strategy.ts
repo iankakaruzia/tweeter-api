@@ -25,7 +25,7 @@ export class TwitterStrategy extends PassportStrategy(Strategy, 'twitter') {
     profile: Profile,
     done: (err: any, user: any, info?: any) => void
   ) {
-    const { displayName, emails = [], id, username, photos } = profile
+    const { displayName, emails = [], id, photos } = profile
 
     if (!emails[0]?.value) {
       throw new BadRequestException(
@@ -43,7 +43,6 @@ export class TwitterStrategy extends PassportStrategy(Strategy, 'twitter') {
         provider: Provider.TWITTER,
         providerId: id,
         name: displayName,
-        username,
         email: emails[0].value,
         photoUrl: photos[0]?.value ?? null
       })

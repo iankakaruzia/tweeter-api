@@ -1,7 +1,6 @@
 import { ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { ConfigService } from '@nestjs/config'
-import { graphqlUploadExpress } from 'graphql-upload'
 import * as helmet from 'helmet'
 import * as basicAuth from 'express-basic-auth'
 import * as Sentry from '@sentry/node'
@@ -9,6 +8,7 @@ import * as cookieParser from 'cookie-parser'
 import * as session from 'express-session'
 import { AppModule } from './app.module'
 import { TypeORMExceptionFilter } from './common/filters/typeorm-exception.filter'
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter'
 
 const configService = new ConfigService()
 
@@ -23,6 +23,11 @@ async function bootstrap() {
   const SESSION_SECRET = configService.get('SESSION_SECRET')
 
   const app = await NestFactory.create(AppModule)
+
+  Sentry.init({
+    dsn: SENTRY_DNS,
+    tracesSampleRate: Number(SENTRY_TRACES_SAMPLE_RATE)
+  })
 
   app.use(
     helmet({
@@ -46,9 +51,7 @@ async function bootstrap() {
     })
   )
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }))
-  app.useGlobalFilters(new TypeORMExceptionFilter())
-
-  app.use(graphqlUploadExpress({ maxFileSize: 1000000, maxFiles: 10 }))
+  app.useGlobalFilters(new TypeORMExceptionFilter(), new AllExceptionsFilter())
 
   app.use(
     '/admin/queues',
@@ -59,11 +62,6 @@ async function bootstrap() {
       challenge: true
     })
   )
-
-  Sentry.init({
-    dsn: SENTRY_DNS,
-    tracesSampleRate: Number(SENTRY_TRACES_SAMPLE_RATE)
-  })
 
   await app.listen(PORT || 8080)
 }

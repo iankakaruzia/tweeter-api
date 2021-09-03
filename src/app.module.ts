@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module'
 import { UploadModule } from './upload/upload.module'
 import { MailModule } from './mail/mail.module'
 import { configValidationSchema } from './config/config.schema'
+import { PostsModule } from './posts/posts.module'
 
 @Module({
   imports: [
@@ -58,7 +59,8 @@ import { configValidationSchema } from './config/config.schema'
     CryptographyModule,
     AuthModule,
     UploadModule,
-    MailModule
+    MailModule,
+    PostsModule
   ]
 })
 export class AppModule {}

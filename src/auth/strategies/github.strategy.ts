@@ -26,7 +26,7 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
     profile: Profile,
     done: (err: any, user: any, info?: any) => void
   ) {
-    const { displayName, emails = [], id, photos, username } = profile
+    const { displayName, emails = [], id, photos } = profile
     if (!emails[0]?.value) {
       throw new BadRequestException(
         'We could not get a valid email for this github account.'
@@ -39,7 +39,6 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
       user = await this.userRepository.createUserByProvider({
         provider: Provider.GITHUB,
         providerId: id,
-        username,
         name: displayName,
         email: emails[0].value,
         photoUrl: photos[0]?.value ?? null

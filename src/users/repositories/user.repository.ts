@@ -1,10 +1,10 @@
 import { EntityRepository, Repository } from 'typeorm'
 import { nanoid } from 'nanoid'
 import { User } from '../entities/user.entity'
-import { UpdateProfileInput } from '../inputs/update-profile.input'
 import { Provider } from 'src/auth/enums/provider.enum'
 import { CreateUserByProviderParams } from 'src/auth/types/create-user-provider-params.type'
 import { RegisterDto } from 'src/auth/dtos/register.dto'
+import { UpdateProfileDto } from '../dtos/update-profile.dto'
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -13,7 +13,7 @@ export class UserRepository extends Repository<User> {
     hashedConfirmationToken: string
   ): Promise<User> {
     const { username, email, password } = registerDto
-    const user = new User()
+    const user = this.create()
     user.username = username
     user.email = email
     user.password = password
@@ -68,8 +68,8 @@ export class UserRepository extends Repository<User> {
     return this.save(user)
   }
 
-  async updateUserProfile(updateProfileInput: UpdateProfileInput, user: User) {
-    Object.assign(user, updateProfileInput)
+  async updateUserProfile(updateProfileDto: UpdateProfileDto, user: User) {
+    Object.assign(user, updateProfileDto)
     return this.save(user)
   }
 
@@ -80,9 +80,9 @@ export class UserRepository extends Repository<User> {
   async createUserByProvider(
     params: CreateUserByProviderParams
   ): Promise<User> {
-    const { provider, providerId, email, name, photoUrl, username } = params
-    const user = new User()
-    user.username = username ?? nanoid(6)
+    const { provider, providerId, email, name, photoUrl } = params
+    const user = this.create()
+    user.username = nanoid(6)
     user.email = email
     user.name = name
     user.profilePhoto = photoUrl

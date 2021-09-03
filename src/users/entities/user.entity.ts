@@ -1,9 +1,12 @@
+import { Exclude } from 'class-transformer'
 import { Provider } from 'src/auth/enums/provider.enum'
+import { Post } from 'src/posts/entities/post.entity'
 import {
   Column,
   CreateDateColumn,
   Entity,
   Index,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn
 } from 'typeorm'
@@ -11,7 +14,7 @@ import {
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
-  id: string
+  id: number
 
   @Column({ nullable: true })
   name?: string
@@ -21,6 +24,7 @@ export class User {
 
   @Index('provider_idx', { unique: true })
   @Column({ nullable: true, name: 'provider_id' })
+  @Exclude()
   providerId?: string
 
   @Index('email_idx', { unique: true })
@@ -32,6 +36,7 @@ export class User {
   username: string
 
   @Column({ nullable: true })
+  @Exclude()
   password?: string
 
   @Column({ nullable: true })
@@ -49,23 +54,32 @@ export class User {
   @Column({ nullable: true })
   birthday?: Date
 
+  @OneToMany((_type) => Post, (post) => post.author)
+  posts: Post[]
+
   @Column({ default: false, name: 'is_active' })
+  @Exclude()
   isActive: boolean
 
   @Column()
   @CreateDateColumn({ name: 'created_at' })
+  @Exclude()
   createdAt: Date
 
   @Column()
   @UpdateDateColumn({ name: 'updated_at' })
+  @Exclude()
   updatedAt: Date
 
   @Column({ nullable: true, name: 'reset_password_token' })
+  @Exclude()
   resetPasswordToken?: string
 
   @Column({ nullable: true, name: 'reset_password_expiration' })
+  @Exclude()
   resetPasswordExpiration?: number
 
   @Column({ nullable: true, name: 'confirmation_token' })
+  @Exclude()
   confirmationToken: string
 }

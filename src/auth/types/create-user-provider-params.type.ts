@@ -5,6 +5,5 @@ export type CreateUserByProviderParams = {
   providerId: string
   name?: string
   email: string
-  username?: string
   photoUrl?: string
 }

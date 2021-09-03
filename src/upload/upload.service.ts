@@ -5,14 +5,14 @@ import {
   UploadApiResponse,
   v2 as cloudinary
 } from 'cloudinary'
-import { ReadStream } from 'fs'
+import { createReadStream } from 'streamifier'
 
 @Injectable()
 export class UploadService {
   constructor(private configService: ConfigService) {}
 
   async uploadStream(
-    fileStream: ReadStream,
+    buffer: Buffer,
     options?: UploadApiOptions
   ): Promise<UploadApiResponse> {
     cloudinary.config({
@@ -25,15 +25,15 @@ export class UploadService {
       const cloudStream = cloudinary.uploader.upload_stream(
         options,
         function (err, fileUploaded) {
-          if (err) {
+          if (fileUploaded) {
+            resolve(fileUploaded)
+          } else {
             reject(err)
           }
-
-          resolve(fileUploaded)
         }
       )
 
-      fileStream.pipe(cloudStream)
+      createReadStream(buffer).pipe(cloudStream)
     })
   }
 }
