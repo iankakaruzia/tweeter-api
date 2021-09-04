@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common'
-import { Args, Mutation, Resolver } from '@nestjs/graphql'
+import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql'
 import { InjectRepository } from '@nestjs/typeorm'
 import { UserInputError } from 'apollo-server-errors'
 import { FileUpload, GraphQLUpload } from 'graphql-upload'
@@ -20,7 +20,7 @@ export class PostsResolver {
 
   @Mutation((_returns) => PostType)
   @UseGuards(GqlAuthGuard)
-  async uploadFile(
+  async createPost(
     @Args('image', { type: () => GraphQLUpload, nullable: true })
     image: FileUpload,
     @Args('createPostInput', { nullable: true })
@@ -53,5 +53,10 @@ export class PostsResolver {
       },
       user
     )
+  }
+
+  @Query((_returns) => PostType)
+  async post(@Args('id', { type: () => ID }) id: number) {
+    return this.postRepository.findOne(id)
   }
 }
