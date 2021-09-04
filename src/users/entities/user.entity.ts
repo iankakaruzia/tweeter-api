@@ -75,7 +75,7 @@ export class User {
   @Exclude()
   resetPasswordToken?: string
 
-  @Column({ nullable: true, name: 'reset_password_expiration' })
+  @Column({ nullable: true, name: 'reset_password_expiration', type: 'bigint' })
   @Exclude()
   resetPasswordExpiration?: number
 

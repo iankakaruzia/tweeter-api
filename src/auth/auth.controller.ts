@@ -1,10 +1,8 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
   HttpStatus,
-  NotFoundException,
   Param,
   Patch,
   Post,
@@ -13,9 +11,7 @@ import {
   UseGuards
 } from '@nestjs/common'
 import { Request } from 'express'
-import { randomBytes, createHash } from 'crypto'
 
-import { MailService } from 'src/mail/mail.service'
 import { User } from 'src/users/entities/user.entity'
 import { AuthService } from './auth.service'
 import { LoginDto } from './dtos/login.dto'
@@ -27,8 +23,6 @@ import { GetUser } from './decorators/get-user.decorator'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { UpdateUsernameDto } from './dtos/update-username.dto'
 import { UpdateCurrentPasswordDto } from './dtos/update-current-password.dto'
-import { InjectRepository } from '@nestjs/typeorm'
-import { UserRepository } from 'src/users/repositories/user.repository'
 import { TwitterGuard } from './guards/twitter.guard'
 import { GoogleGuard } from './guards/google.guard'
 import { AuthHttpExceptionFilter } from './filters/auth-http-exception.filter'
@@ -40,9 +34,7 @@ import { ConfigService } from '@nestjs/config'
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private mailService: MailService,
-    private configService: ConfigService,
-    @InjectRepository(UserRepository) private userRepository: UserRepository
+    private configService: ConfigService
   ) {}
 
   @Get('/facebook')
@@ -129,15 +121,7 @@ export class AuthController {
 
   @Post('/register')
   async register(@Body() registerDto: RegisterDto) {
-    const confirmationToken = randomBytes(32).toString('hex')
-    const hashedConfirmationToken = createHash('sha256')
-      .update(confirmationToken)
-      .digest('hex')
-    const user = await this.authService.register(
-      registerDto,
-      hashedConfirmationToken
-    )
-    await this.mailService.sendConfirmationEmail(user, confirmationToken)
+    const user = await this.authService.register(registerDto)
     return {
       message: `Almost there! We've sent an email to ${user.email}. Open it up to activate your account.`
     }
@@ -145,14 +129,7 @@ export class AuthController {
 
   @Post('/confirm-account/:token')
   async confirmAccount(@Param('token') token: string) {
-    const user = await this.authService.getUserByConfirmationToken(token)
-    if (user?.isActive) {
-      throw new BadRequestException('Account Already Activated!')
-    }
-    if (!user) {
-      throw new NotFoundException('Invalid confirmation token!')
-    }
-    await this.userRepository.activateAccount(user)
+    await this.authService.confirmAccount(token)
     return {
       message:
         'Account Successfully Activated! You can now log into our application.'
@@ -161,15 +138,10 @@ export class AuthController {
 
   @Post('/forgot-password')
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    const { email } = forgotPasswordDto
-    const user = await this.userRepository.getByUsernameOrEmail(email)
-    if (!user) {
-      throw new BadRequestException()
-    }
-    const resetToken = await this.authService.createPasswordResetToken(user)
-    await this.mailService.sendForgotPasswordEmail(user, resetToken)
+    await this.authService.forgotPassword(forgotPasswordDto)
     return {
-      message: 'Token sent to email!'
+      message:
+        'A Token will be sent to your email if we are able to find an account with the provided email'
     }
   }
 
@@ -178,15 +150,7 @@ export class AuthController {
     @Body() resetPasswordDto: ResetPasswordDto,
     @Param('token') token: string
   ) {
-    const { password } = resetPasswordDto
-    const user = await this.authService.getUserByResetPasswordToken(token)
-    const isValidToken = Date.now() <= user?.resetPasswordExpiration
-    if (!user || !isValidToken) {
-      throw new NotFoundException(
-        'Invalid reset token! Please request a new token again.'
-      )
-    }
-    await this.authService.updateUserPassword(user, password)
+    await this.authService.updateUserPassword(resetPasswordDto, token)
     return {
       message: 'Password updated! Please log in to enjoy our platform.'
     }
@@ -199,11 +163,12 @@ export class AuthController {
     @GetUser() user: User,
     @Req() req: Request
   ) {
-    const { username } = updateUsernameDto
-    const updatedUser = await this.userRepository.updateUsername(username, user)
-    const { cookie } = this.authService.getCookieWithJwtToken(updatedUser)
+    const { cookie, loggedInUserInfo } = await this.authService.updateUsername(
+      updateUsernameDto,
+      user
+    )
     req.res.setHeader('Set-Cookie', cookie)
-    return this.authService.getLoggedInUserInfo(user)
+    return loggedInUserInfo
   }
 
   @Patch('/user/password')

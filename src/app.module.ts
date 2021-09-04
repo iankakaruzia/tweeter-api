@@ -41,6 +41,8 @@ import { PostsModule } from './posts/posts.module'
       useFactory: async (configService: ConfigService) => {
         return {
           type: 'postgres',
+          logging:
+            configService.get('NODE_ENV') === 'production' ? false : true,
           host: configService.get('POSTGRES_HOST'),
           port: configService.get('POSTGRES_PORT'),
           username: configService.get('POSTGRES_USER'),
