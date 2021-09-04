@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { InjectRepository } from '@nestjs/typeorm'
+import { createReadStream } from 'streamifier'
 import { GetUser } from 'src/auth/decorators/get-user.decorator'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
 import { UploadService } from 'src/upload/upload.service'
@@ -36,7 +37,8 @@ export class UsersController {
     if (!photo) {
       throw new BadRequestException('Is required that you send a valid image!')
     }
-    const { secure_url } = await this.uploadService.uploadStream(photo.buffer, {
+    const photoStream = createReadStream(photo.buffer)
+    const { secure_url } = await this.uploadService.uploadStream(photoStream, {
       use_filename: true,
       filename_override: user.username,
       unique_filename: false,
@@ -57,7 +59,8 @@ export class UsersController {
     if (!cover) {
       throw new BadRequestException('Is required that you send a valid image!')
     }
-    const { secure_url } = await this.uploadService.uploadStream(cover.buffer, {
+    const coverStream = createReadStream(cover.buffer)
+    const { secure_url } = await this.uploadService.uploadStream(coverStream, {
       folder: 'cover',
       tags: ['cover'],
       allowed_formats: ['jpg', 'png']

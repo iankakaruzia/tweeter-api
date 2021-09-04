@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common'
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { GraphQLModule } from '@nestjs/graphql'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { BullModule } from '@nestjs/bull'
+import { graphqlUploadExpress, GraphQLUpload } from 'graphql-upload'
 import { UsersModule } from './users/users.module'
 import { CryptographyModule } from './cryptography/cryptography.module'
 import { AuthModule } from './auth/auth.module'
@@ -53,7 +54,9 @@ import { PostsModule } from './posts/posts.module'
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
-      sortSchema: true
+      sortSchema: true,
+      resolvers: { Upload: GraphQLUpload },
+      path: '/graphql'
     }),
     UsersModule,
     CryptographyModule,
@@ -63,4 +66,8 @@ import { PostsModule } from './posts/posts.module'
     PostsModule
   ]
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(graphqlUploadExpress()).forRoutes('graphql')
+  }
+}
