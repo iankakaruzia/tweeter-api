@@ -1,22 +1,16 @@
 import { UseGuards } from '@nestjs/common'
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql'
-import { InjectRepository } from '@nestjs/typeorm'
-import { UserInputError } from 'apollo-server-errors'
 import { FileUpload, GraphQLUpload } from 'graphql-upload'
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator'
 import { GqlAuthGuard } from 'src/auth/guards/gql-auth.guard'
-import { UploadService } from 'src/upload/upload.service'
 import { User } from 'src/users/entities/user.entity'
 import { CreatePostInput } from './dtos/create-post.input'
 import { PostType } from './models/post.type'
-import { PostRepository } from './repositories/post.repository'
+import { PostsService } from './posts.service'
 
 @Resolver((_of: any) => PostType)
 export class PostsResolver {
-  constructor(
-    private uploadService: UploadService,
-    @InjectRepository(PostRepository) private postRepository: PostRepository
-  ) {}
+  constructor(private postsService: PostsService) {}
 
   @Mutation((_returns) => PostType)
   @UseGuards(GqlAuthGuard)
@@ -27,36 +21,11 @@ export class PostsResolver {
     createPostInput: CreatePostInput,
     @CurrentUser() user: User
   ) {
-    const content = createPostInput?.content
-    const isPublic = createPostInput?.isPublic
-    if (!content && !image) {
-      throw new UserInputError(
-        'Please provide a text content or a image to create a post'
-      )
-    }
-    let imageUrl: string
-    if (image) {
-      const { createReadStream } = image
-      const fileStream = createReadStream()
-      const { secure_url } = await this.uploadService.uploadStream(fileStream, {
-        folder: 'posts',
-        tags: ['post'],
-        allowed_formats: ['jpg', 'png']
-      })
-      imageUrl = secure_url
-    }
-    return this.postRepository.createPost(
-      {
-        content,
-        imageUrl,
-        isPublic
-      },
-      user
-    )
+    return this.postsService.createPost(image, createPostInput, user)
   }
 
   @Query((_returns) => PostType)
   async post(@Args('id', { type: () => ID }) id: number) {
-    return this.postRepository.findOne(id)
+    return this.postsService.getPost(id)
   }
 }
