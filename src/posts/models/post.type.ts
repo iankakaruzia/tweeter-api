@@ -1,4 +1,6 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql'
+import { User } from 'src/users/entities/user.entity'
+import { UserType } from 'src/users/models/user.type'
 
 @ObjectType('Post')
 export class PostType {
@@ -16,4 +18,7 @@ export class PostType {
 
   @Field()
   createdAt: Date
+
+  @Field((_type) => UserType)
+  author: User
 }

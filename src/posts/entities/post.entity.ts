@@ -22,7 +22,7 @@ export class Post {
   @Column({ default: true, name: 'is_public' })
   isPublic?: boolean
 
-  @ManyToOne((_type) => User, (user) => user.posts)
+  @ManyToOne((_type) => User, (user) => user.posts, { eager: true })
   @Transform(({ value }) => ({
     id: value.id,
     name: value.name,
