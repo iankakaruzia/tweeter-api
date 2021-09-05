@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer'
 import { Like } from 'src/likes/entities/like.entity'
+import { Save } from 'src/saves/entities/save.entity'
 import { User } from 'src/users/entities/user.entity'
 import {
   Column,
@@ -33,10 +34,12 @@ export class Post {
   }))
   author: User
 
-  @OneToMany((_type) => Like, (like) => like.author)
+  @OneToMany((_type) => Like, (like) => like.post)
   likes: Like[]
 
-  @Column()
+  @OneToMany((_type) => Save, (save) => save.post)
+  saves: Save[]
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date
 }

@@ -7,15 +7,15 @@ import {
   PrimaryGeneratedColumn
 } from 'typeorm'
 
-@Entity({ name: 'likes' })
-export class Like {
+@Entity({ name: 'saves' })
+export class Save {
   @PrimaryGeneratedColumn()
   id: number
 
-  @ManyToOne((_type) => User, (user) => user.likes, { eager: true })
+  @ManyToOne((_type) => User, (user) => user.saves, { eager: true })
   author: User
 
-  @ManyToOne((_type) => Post, (post) => post.likes, { eager: true })
+  @ManyToOne((_type) => Post, (post) => post.saves, { eager: true })
   post: Post
 
   @CreateDateColumn({ name: 'created_at' })

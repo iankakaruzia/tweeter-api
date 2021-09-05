@@ -2,6 +2,7 @@ import { Exclude } from 'class-transformer'
 import { Provider } from 'src/auth/enums/provider.enum'
 import { Like } from 'src/likes/entities/like.entity'
 import { Post } from 'src/posts/entities/post.entity'
+import { Save } from 'src/saves/entities/save.entity'
 import {
   Column,
   CreateDateColumn,
@@ -61,16 +62,17 @@ export class User {
   @OneToMany((_type) => Like, (like) => like.author)
   likes: Like[]
 
+  @OneToMany((_type) => Save, (save) => save.author)
+  saves: Save[]
+
   @Column({ default: false, name: 'is_active' })
   @Exclude()
   isActive: boolean
 
-  @Column()
   @CreateDateColumn({ name: 'created_at' })
   @Exclude()
   createdAt: Date
 
-  @Column()
   @UpdateDateColumn({ name: 'updated_at' })
   @Exclude()
   updatedAt: Date
