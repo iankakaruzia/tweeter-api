@@ -78,7 +78,6 @@ export class AuthService {
   }
 
   async createPasswordResetToken(user: User): Promise<string> {
-    console.log('HERE')
     const resetToken = randomBytes(32).toString('hex')
     const passwordResetToken = createHash('sha256')
       .update(resetToken)

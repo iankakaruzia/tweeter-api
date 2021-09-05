@@ -4,7 +4,7 @@ import { FileUpload, GraphQLUpload } from 'graphql-upload'
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator'
 import { GqlAuthGuard } from 'src/auth/guards/gql-auth.guard'
 import { User } from 'src/users/entities/user.entity'
-import { CreatePostInput } from './dtos/create-post.input'
+import { CreatePostInput } from './inputs/create-post.input'
 import { PostType } from './models/post.type'
 import { PostsService } from './posts.service'
 

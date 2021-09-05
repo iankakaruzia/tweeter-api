@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { FileUpload } from 'graphql-upload'
 import { UploadService } from 'src/upload/upload.service'
 import { User } from 'src/users/entities/user.entity'
-import { CreatePostInput } from './dtos/create-post.input'
+import { CreatePostInput } from './inputs/create-post.input'
 import { Post } from './entities/post.entity'
 import { PostRepository } from './repositories/post.repository'
 

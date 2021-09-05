@@ -1,10 +1,12 @@
 import { Transform } from 'class-transformer'
+import { Like } from 'src/likes/entities/like.entity'
 import { User } from 'src/users/entities/user.entity'
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn
 } from 'typeorm'
 
@@ -30,6 +32,9 @@ export class Post {
     profilePhoto: value.profilePhoto
   }))
   author: User
+
+  @OneToMany((_type) => Like, (like) => like.author)
+  likes: Like[]
 
   @Column()
   @CreateDateColumn({ name: 'created_at' })

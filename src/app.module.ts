@@ -12,6 +12,7 @@ import { UploadModule } from './upload/upload.module'
 import { MailModule } from './mail/mail.module'
 import { configValidationSchema } from './config/config.schema'
 import { PostsModule } from './posts/posts.module'
+import { LikesModule } from './likes/likes.module'
 
 @Module({
   imports: [
@@ -65,7 +66,8 @@ import { PostsModule } from './posts/posts.module'
     AuthModule,
     UploadModule,
     MailModule,
-    PostsModule
+    PostsModule,
+    LikesModule
   ]
 })
 export class AppModule implements NestModule {
