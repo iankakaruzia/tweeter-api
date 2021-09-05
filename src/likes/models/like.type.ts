@@ -1,6 +1,6 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql'
-import { Post } from 'src/posts/entities/post.entity'
-import { PostType } from 'src/posts/models/post.type'
+import { Tweet } from 'src/tweets/entities/tweet.entity'
+import { TweetType } from 'src/tweets/models/tweet.type'
 import { User } from 'src/users/entities/user.entity'
 import { UserType } from 'src/users/models/user.type'
 
@@ -12,8 +12,8 @@ export class LikeType {
   @Field((_type) => UserType)
   author: User
 
-  @Field((_type) => PostType)
-  post: Post
+  @Field((_type) => TweetType)
+  tweet: Tweet
 
   @Field()
   createdAt: Date

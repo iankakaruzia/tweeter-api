@@ -1,6 +1,6 @@
 import { IsBoolean, IsOptional, IsString } from 'class-validator'
 
-export class CreatePostDto {
+export class CreateTweetDto {
   @IsString()
   @IsOptional()
   imageUrl: string

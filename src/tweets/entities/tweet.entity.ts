@@ -11,8 +11,8 @@ import {
   PrimaryGeneratedColumn
 } from 'typeorm'
 
-@Entity({ name: 'posts' })
-export class Post {
+@Entity({ name: 'tweets' })
+export class Tweet {
   @PrimaryGeneratedColumn()
   id: number
 
@@ -25,7 +25,7 @@ export class Post {
   @Column({ default: true, name: 'is_public' })
   isPublic?: boolean
 
-  @ManyToOne((_type) => User, (user) => user.posts, { eager: true })
+  @ManyToOne((_type) => User, (user) => user.tweets, { eager: true })
   @Transform(({ value }) => ({
     id: value.id,
     name: value.name,
@@ -34,10 +34,10 @@ export class Post {
   }))
   author: User
 
-  @OneToMany((_type) => Like, (like) => like.post)
+  @OneToMany((_type) => Like, (like) => like.tweet)
   likes: Like[]
 
-  @OneToMany((_type) => Save, (save) => save.post)
+  @OneToMany((_type) => Save, (save) => save.tweet)
   saves: Save[]
 
   @CreateDateColumn({ name: 'created_at' })

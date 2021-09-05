@@ -11,7 +11,7 @@ import { AuthModule } from './auth/auth.module'
 import { UploadModule } from './upload/upload.module'
 import { MailModule } from './mail/mail.module'
 import { configValidationSchema } from './config/config.schema'
-import { PostsModule } from './posts/posts.module'
+import { TweetsModule } from './tweets/tweets.module'
 import { LikesModule } from './likes/likes.module'
 import { SavesModule } from './saves/saves.module'
 
@@ -67,7 +67,7 @@ import { SavesModule } from './saves/saves.module'
     AuthModule,
     UploadModule,
     MailModule,
-    PostsModule,
+    TweetsModule,
     LikesModule,
     SavesModule
   ]

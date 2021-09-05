@@ -2,8 +2,8 @@ import { Field, ID, ObjectType } from '@nestjs/graphql'
 import { User } from 'src/users/entities/user.entity'
 import { UserType } from 'src/users/models/user.type'
 
-@ObjectType('Post')
-export class PostType {
+@ObjectType('Tweet')
+export class TweetType {
   @Field((_type) => ID)
   id: number
 

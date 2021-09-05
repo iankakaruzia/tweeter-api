@@ -4,20 +4,20 @@ import {
   NotFoundException
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { PostsService } from 'src/posts/posts.service'
+import { TweetsService } from 'src/tweets/tweets.service'
 import { User } from 'src/users/entities/user.entity'
 import { LikeRepository } from './repositories/like.repository'
 
 @Injectable()
 export class LikesService {
   constructor(
-    private postsService: PostsService,
+    private tweetsService: TweetsService,
     @InjectRepository(LikeRepository) private likeRepository: LikeRepository
   ) {}
 
-  async like(postId: number, user: User) {
-    const post = await this.postsService.getPost(postId)
-    return this.likeRepository.addLike(post, user)
+  async like(tweetId: number, user: User) {
+    const tweet = await this.tweetsService.getTweet(tweetId)
+    return this.likeRepository.addLike(tweet, user)
   }
 
   async dislike(likeId: number, user: User) {

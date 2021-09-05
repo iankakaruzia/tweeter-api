@@ -7,27 +7,27 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { FileUpload } from 'graphql-upload'
 import { UploadService } from 'src/upload/upload.service'
 import { User } from 'src/users/entities/user.entity'
-import { CreatePostInput } from './inputs/create-post.input'
-import { Post } from './entities/post.entity'
-import { PostRepository } from './repositories/post.repository'
+import { CreateTweetInput } from './inputs/create-tweet.input'
+import { Tweet } from './entities/tweet.entity'
+import { TweetRepository } from './repositories/tweet.repository'
 
 @Injectable()
-export class PostsService {
+export class TweetsService {
   constructor(
     private uploadService: UploadService,
-    @InjectRepository(PostRepository) private postRepository: PostRepository
+    @InjectRepository(TweetRepository) private tweetRepository: TweetRepository
   ) {}
 
-  async createPost(
+  async createTweet(
     image: FileUpload,
-    createPostInput: CreatePostInput,
+    createTweetInput: CreateTweetInput,
     user: User
-  ): Promise<Post> {
-    const content = createPostInput?.content
-    const isPublic = createPostInput?.isPublic
+  ): Promise<Tweet> {
+    const content = createTweetInput?.content
+    const isPublic = createTweetInput?.isPublic
     if (!content && !image) {
       throw new BadRequestException(
-        'Please provide a text content or a image to create a post'
+        'Please provide a text content or a image to create a tweet'
       )
     }
     let imageUrl: string
@@ -35,13 +35,13 @@ export class PostsService {
       const { createReadStream } = image
       const fileStream = createReadStream()
       const { secure_url } = await this.uploadService.uploadStream(fileStream, {
-        folder: 'posts',
-        tags: ['post'],
+        folder: 'tweets',
+        tags: ['tweet'],
         allowed_formats: ['jpg', 'png']
       })
       imageUrl = secure_url
     }
-    return this.postRepository.createPost(
+    return this.tweetRepository.createTweet(
       {
         content,
         imageUrl,
@@ -51,11 +51,11 @@ export class PostsService {
     )
   }
 
-  async getPost(id: number) {
-    const post = await this.postRepository.findOne(id)
-    if (!post) {
+  async getTweet(id: number): Promise<Tweet> {
+    const tweet = await this.tweetRepository.findOne(id)
+    if (!tweet) {
       throw new NotFoundException()
     }
-    return post
+    return tweet
   }
 }

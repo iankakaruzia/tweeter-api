@@ -13,10 +13,10 @@ export class SavesResolver {
   @Mutation((_returns) => SaveType)
   @UseGuards(GqlAuthGuard)
   async save(
-    @Args('postId', { type: () => ID }) postId: number,
+    @Args('tweetId', { type: () => ID }) tweetId: number,
     @CurrentUser() user: User
   ) {
-    return this.savesService.save(postId, user)
+    return this.savesService.save(tweetId, user)
   }
 
   @Mutation((_returns) => ID, { nullable: true })

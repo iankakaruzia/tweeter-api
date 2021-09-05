@@ -1,4 +1,4 @@
-import { Post } from 'src/posts/entities/post.entity'
+import { Tweet } from 'src/tweets/entities/tweet.entity'
 import { User } from 'src/users/entities/user.entity'
 import {
   CreateDateColumn,
@@ -15,8 +15,8 @@ export class Save {
   @ManyToOne((_type) => User, (user) => user.saves, { eager: true })
   author: User
 
-  @ManyToOne((_type) => Post, (post) => post.saves, { eager: true })
-  post: Post
+  @ManyToOne((_type) => Tweet, (tweet) => tweet.saves, { eager: true })
+  tweet: Tweet
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date
