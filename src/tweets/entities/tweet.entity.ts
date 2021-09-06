@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer'
 import { Like } from 'src/likes/entities/like.entity'
+import { Retweet } from 'src/retweets/entities/retweet.entity'
 import { Save } from 'src/saves/entities/save.entity'
 import { User } from 'src/users/entities/user.entity'
 import {
@@ -39,6 +40,9 @@ export class Tweet {
 
   @OneToMany((_type) => Save, (save) => save.tweet)
   saves: Save[]
+
+  @OneToMany((_type) => Retweet, (retweet) => retweet.tweet)
+  retweets: Retweet[]
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date

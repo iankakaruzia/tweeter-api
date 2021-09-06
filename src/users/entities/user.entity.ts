@@ -12,6 +12,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn
 } from 'typeorm'
+import { Retweet } from 'src/retweets/entities/retweet.entity'
 
 @Entity({ name: 'users' })
 export class User {
@@ -64,6 +65,9 @@ export class User {
 
   @OneToMany((_type) => Save, (save) => save.author)
   saves: Save[]
+
+  @OneToMany((_type) => Retweet, (retweet) => retweet.author)
+  retweets: Retweet[]
 
   @Column({ default: false, name: 'is_active' })
   @Exclude()
