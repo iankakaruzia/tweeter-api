@@ -1,3 +1,4 @@
+import { Comment } from 'src/comments/entities/comment.entity'
 import { Tweet } from 'src/tweets/entities/tweet.entity'
 import { User } from 'src/users/entities/user.entity'
 import {
@@ -15,8 +16,18 @@ export class Like {
   @ManyToOne((_type) => User, (user) => user.likes, { eager: true })
   author: User
 
-  @ManyToOne((_type) => Tweet, (tweet) => tweet.likes, { eager: true })
+  @ManyToOne((_type) => Tweet, (tweet) => tweet.likes, {
+    eager: true,
+    nullable: true
+  })
   tweet: Tweet
+
+  @ManyToOne((_type) => Comment, (comment) => comment.likes, {
+    eager: true,
+    nullable: true,
+    onDelete: 'CASCADE'
+  })
+  comment: Comment
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date

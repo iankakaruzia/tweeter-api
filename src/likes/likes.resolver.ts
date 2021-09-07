@@ -12,11 +12,20 @@ export class LikesResolver {
 
   @Mutation((_returns) => LikeType)
   @UseGuards(GqlAuthGuard)
-  async like(
+  async likeTweet(
     @Args('tweetId', { type: () => ID }) tweetId: number,
     @CurrentUser() user: User
   ) {
-    return this.likesService.like(tweetId, user)
+    return this.likesService.likeTweet(tweetId, user)
+  }
+
+  @Mutation((_returns) => LikeType)
+  @UseGuards(GqlAuthGuard)
+  async likeComment(
+    @Args('commentId', { type: () => ID }) commentId: number,
+    @CurrentUser() user: User
+  ) {
+    return this.likesService.likeComment(commentId, user)
   }
 
   @Mutation((_returns) => ID, { nullable: true })

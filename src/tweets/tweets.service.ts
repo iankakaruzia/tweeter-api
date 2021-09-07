@@ -54,7 +54,7 @@ export class TweetsService {
   async getTweet(id: number): Promise<Tweet> {
     const tweet = await this.tweetRepository.findOne(id)
     if (!tweet) {
-      throw new NotFoundException()
+      throw new NotFoundException('Unable to find a Tweet with the given ID')
     }
     return tweet
   }

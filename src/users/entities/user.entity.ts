@@ -13,6 +13,7 @@ import {
   UpdateDateColumn
 } from 'typeorm'
 import { Retweet } from 'src/retweets/entities/retweet.entity'
+import { Comment } from 'src/comments/entities/comment.entity'
 
 @Entity({ name: 'users' })
 export class User {
@@ -68,6 +69,9 @@ export class User {
 
   @OneToMany((_type) => Retweet, (retweet) => retweet.author)
   retweets: Retweet[]
+
+  @OneToMany((_type) => Comment, (comment) => comment.author)
+  comments: Comment[]
 
   @Column({ default: false, name: 'is_active' })
   @Exclude()
