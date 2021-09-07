@@ -77,11 +77,11 @@ export class User {
   @Exclude()
   isActive: boolean
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   @Exclude()
   createdAt: Date
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   @Exclude()
   updatedAt: Date
 

@@ -48,6 +48,6 @@ export class Tweet {
   @OneToMany((_type) => Comment, (comment) => comment.tweet)
   comments: Comment[]
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date
 }

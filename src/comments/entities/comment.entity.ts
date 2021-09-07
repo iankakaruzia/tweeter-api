@@ -30,6 +30,6 @@ export class Comment {
   @OneToMany((_type) => Like, (like) => like.comment)
   likes: Like[]
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date
 }

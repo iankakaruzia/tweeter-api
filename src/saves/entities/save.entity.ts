@@ -18,6 +18,6 @@ export class Save {
   @ManyToOne((_type) => Tweet, (tweet) => tweet.saves, { eager: true })
   tweet: Tweet
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date
 }

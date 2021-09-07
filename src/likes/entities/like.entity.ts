@@ -29,6 +29,6 @@ export class Like {
   })
   comment: Comment
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date
 }
