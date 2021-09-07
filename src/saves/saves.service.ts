@@ -4,6 +4,7 @@ import {
   NotFoundException
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+import { PaginationArgs } from 'src/common/pagination/models/pagination.args'
 import { TweetsService } from 'src/tweets/tweets.service'
 import { User } from 'src/users/entities/user.entity'
 import { SaveRepository } from './repositories/save.repository'
@@ -32,5 +33,9 @@ export class SavesService {
     }
 
     await this.saveRepository.remove(save)
+  }
+
+  async getSaves(paginationArgs: PaginationArgs, user: User) {
+    return this.saveRepository.getSaves(paginationArgs, user)
   }
 }

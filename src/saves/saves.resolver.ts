@@ -1,8 +1,10 @@
 import { UseGuards } from '@nestjs/common'
-import { Args, ID, Mutation, Resolver } from '@nestjs/graphql'
+import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql'
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator'
 import { GqlAuthGuard } from 'src/auth/guards/gql-auth.guard'
+import { PaginationArgs } from 'src/common/pagination/models/pagination.args'
 import { User } from 'src/users/entities/user.entity'
+import { PaginatedSaves } from './models/paginated-saves.type'
 import { SaveType } from './models/save.type'
 import { SavesService } from './saves.service'
 
@@ -27,5 +29,11 @@ export class SavesResolver {
   ) {
     await this.savesService.removeSave(saveId, user)
     return null
+  }
+
+  @Query((_returns) => PaginatedSaves)
+  @UseGuards(GqlAuthGuard)
+  saves(@Args() paginationArgs: PaginationArgs, @CurrentUser() user: User) {
+    return this.savesService.getSaves(paginationArgs, user)
   }
 }
