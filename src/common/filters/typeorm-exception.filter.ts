@@ -10,7 +10,6 @@ import { TypeORMError } from 'typeorm'
 export class TypeORMExceptionFilter implements ExceptionFilter {
   catch(exception: TypeORMError, host: ArgumentsHost): void {
     const response = host.switchToHttp().getResponse()
-    console.log('HERE')
     if (
       exception.message.includes(
         'duplicate key value violates unique constraint'
