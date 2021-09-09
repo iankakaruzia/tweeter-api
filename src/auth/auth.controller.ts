@@ -186,7 +186,9 @@ export class AuthController {
 
   @Post('/logout')
   async logout(@Req() req: Request) {
-    req.res.setHeader('Set-Cookie', this.authService.logout())
+    const cookie = this.authService.logout()
+    req.res.setHeader('Set-Cookie', cookie)
+    return { message: 'Logged out' }
   }
 
   @Get('/validate')

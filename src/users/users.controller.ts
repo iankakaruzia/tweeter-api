@@ -2,6 +2,7 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Get,
   Patch,
   Post,
   UploadedFile,
@@ -48,5 +49,11 @@ export class UsersController {
     @GetUser() user: User
   ) {
     return this.usersService.updateProfileInfo(updateProfileDto, user)
+  }
+
+  @Get('/me')
+  @UseGuards(JwtAuthGuard)
+  async me(@GetUser() user: User) {
+    return user
   }
 }
