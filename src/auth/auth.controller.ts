@@ -196,4 +196,10 @@ export class AuthController {
   async validade(@GetUser() user: User) {
     return this.authService.getLoggedInUserInfo(user)
   }
+
+  @Get('/validate-cookie')
+  @UseGuards(JwtAuthGuard)
+  async validadeCookie() {
+    return { valid: true }
+  }
 }
