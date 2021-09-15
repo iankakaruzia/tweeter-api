@@ -39,4 +39,18 @@ export class MailService {
       }
     })
   }
+
+  async sendSuccessfullConfirmationEmail(user: User) {
+    const url = `${this.configService.get('CLIENT_URL')}/home`
+
+    await this.mailProducer.sendMail({
+      to: user.email,
+      subject: 'Tweeter - Account confirmated!',
+      template: './successfull-confirmation',
+      context: {
+        url,
+        logo: this.configService.get('CLIENT_URL')
+      }
+    })
+  }
 }

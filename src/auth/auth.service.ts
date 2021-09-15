@@ -193,6 +193,7 @@ export class AuthService {
       throw new NotFoundException('Invalid confirmation token!')
     }
     await this.userRepository.activateAccount(user)
+    await this.mailService.sendSuccessfullConfirmationEmail(user)
   }
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
