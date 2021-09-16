@@ -1,3 +1,5 @@
+> Tweeter
+
 - **User story**: I can see my profile or others' profile
 
 - **User story**: When I am on a profile, I can see Tweets and Retweets. I can also filter by Tweets, Tweets and replies, Media and Likes
@@ -28,4 +30,38 @@
 
 - **User story**: When I am on Bookmarks, I can see the Saved Tweet
 
- - **User story (_optional_)**: I can search for a group
+- **User story (_optional_)**: I can search for a group
+
+> Authentication
+
+- **User story**: I can register a new account
+
+- **User story**: I can log in
+
+- **User story**: I can log in or register with at least one of the following services: Google, Facebook, Twitter or Github
+
+- **User story**: I can sign out
+
+- **User story**: I can see my profile details
+
+- **User story**: I can edit my details including: photo, name, bio, phone, email and password
+
+- **User story**: I can upload a new photo or provide an image URL
+
+> Chat
+
+- **User story**: By default, I am in the Welcome channel
+
+- **User story**: I can create a new channel with a name and a description
+
+- **User story**: I can select a channel of my choice
+
+- **User story**: When I can select a channel, I am added as a member of the channel
+
+- **User story**: I can see a member of the channel
+
+- **User story**: I can send a message
+
+- **User story**: I can see other people's messages
+
+- **User story(optional)**: I can search for a group

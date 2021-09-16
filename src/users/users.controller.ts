@@ -12,9 +12,9 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express'
 import { GetUser } from 'src/auth/decorators/get-user.decorator'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
+import { ImageUrlDto } from './dtos/image-url.dto'
 import { UpdateProfileDto } from './dtos/update-profile.dto'
 import { User } from './entities/user.entity'
-import { RequiredFieldPipe } from './pipes/required-field.pipe'
 import { UsersService } from './users.service'
 
 @UseInterceptors(ClassSerializerInterceptor)
@@ -26,20 +26,22 @@ export class UsersController {
   @UseInterceptors(FileInterceptor('photo'))
   @UseGuards(JwtAuthGuard)
   async uploadProfilePhoto(
-    @UploadedFile(new RequiredFieldPipe('photo')) photo: Express.Multer.File,
+    @UploadedFile() photo: Express.Multer.File,
+    @Body() imageUrlDto: ImageUrlDto,
     @GetUser() user: User
   ) {
-    return this.usersService.updateProfilePhoto(photo, user)
+    return this.usersService.updateProfilePhoto(photo, imageUrlDto, user)
   }
 
   @Post('cover-photo')
   @UseInterceptors(FileInterceptor('cover'))
   @UseGuards(JwtAuthGuard)
   async uploadCoverPhoto(
-    @UploadedFile(new RequiredFieldPipe('cover')) cover: Express.Multer.File,
+    @UploadedFile() cover: Express.Multer.File,
+    @Body() imageUrlDto: ImageUrlDto,
     @GetUser() user: User
   ) {
-    return this.usersService.updateCoverPhoto(cover, user)
+    return this.usersService.updateCoverPhoto(cover, imageUrlDto, user)
   }
 
   @Patch()

@@ -10,18 +10,18 @@ import internal from 'stream'
 
 @Injectable()
 export class UploadService {
-  constructor(private configService: ConfigService) {}
-
-  async uploadStream(
-    readStream: ReadStream | internal.Readable,
-    options?: UploadApiOptions
-  ): Promise<UploadApiResponse> {
+  constructor(private configService: ConfigService) {
     cloudinary.config({
       cloud_name: this.configService.get('CLOUDINARY_CLOUD_NAME'),
       api_key: this.configService.get('CLOUDINARY_API_KEY'),
       api_secret: this.configService.get('CLOUDINARY_API_SECRET')
     })
+  }
 
+  async uploadStream(
+    readStream: ReadStream | internal.Readable,
+    options?: UploadApiOptions
+  ): Promise<UploadApiResponse> {
     return new Promise((resolve, reject) => {
       const cloudStream = cloudinary.uploader.upload_stream(
         options,
@@ -36,5 +36,12 @@ export class UploadService {
 
       readStream.pipe(cloudStream)
     })
+  }
+
+  async upload(
+    file: string,
+    options?: UploadApiOptions
+  ): Promise<UploadApiResponse> {
+    return cloudinary.uploader.upload(file, options)
   }
 }
