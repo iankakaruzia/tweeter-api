@@ -7,7 +7,6 @@ import * as Sentry from '@sentry/node'
 import * as cookieParser from 'cookie-parser'
 import * as session from 'express-session'
 import { AppModule } from './app.module'
-import { TypeORMExceptionFilter } from './common/filters/typeorm-exception.filter'
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter'
 
 const configService = new ConfigService()
@@ -51,7 +50,7 @@ async function bootstrap() {
     })
   )
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }))
-  app.useGlobalFilters(new TypeORMExceptionFilter(), new AllExceptionsFilter())
+  app.useGlobalFilters(new AllExceptionsFilter())
 
   app.use(
     '/admin/queues',

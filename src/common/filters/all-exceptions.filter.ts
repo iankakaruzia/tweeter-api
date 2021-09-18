@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common'
 import { Request, Response } from 'express'
 import * as Sentry from '@sentry/minimal'
+import { TypeORMError } from 'typeorm'
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -18,6 +19,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       exception instanceof HttpException
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR
+
+    if (exception instanceof TypeORMError) {
+      return this.handleTypeORMError(exception, request, response)
+    }
 
     if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
       Sentry.captureException(exception)
@@ -33,6 +38,34 @@ export class AllExceptionsFilter implements ExceptionFilter {
         path: request.url,
         ...errorResponse
       })
+    } else {
+      return exception
+    }
+  }
+
+  private handleTypeORMError(
+    exception: TypeORMError,
+    request: Request,
+    response: Response
+  ) {
+    if (response.status) {
+      if (
+        exception.message.includes(
+          'duplicate key value violates unique constraint'
+        )
+      ) {
+        response.status(HttpStatus.CONFLICT).json({
+          statusCode: HttpStatus.CONFLICT,
+          timestamp: new Date().toISOString(),
+          path: request.url,
+          message: 'The request could not be completed due to a conflict.'
+        })
+      } else {
+        Sentry.captureException(exception)
+        response
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .json({ message: 'Internal Server Error.' })
+      }
     } else {
       return exception
     }

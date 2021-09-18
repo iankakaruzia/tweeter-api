@@ -17,6 +17,7 @@ import { LoginDto } from './dtos/login.dto'
 import { RegisterDto } from './dtos/register.dto'
 import { ResetPasswordDto } from './dtos/reset-password.dto'
 import { UpdateCurrentPasswordDto } from './dtos/update-current-password.dto'
+import { UpdateEmailDto } from './dtos/update-email.dto'
 import { UpdateUsernameDto } from './dtos/update-username.dto'
 import { JwtPayload } from './interfaces/jwt-payload.interface'
 import { LoginReturnType } from './types/logged-user.type'
@@ -208,6 +209,22 @@ export class AuthService {
   async updateUsername(updateUsernameDto: UpdateUsernameDto, user: User) {
     const { username } = updateUsernameDto
     const updatedUser = await this.userRepository.updateUsername(username, user)
+    const { cookie } = this.getCookieWithJwtToken(updatedUser)
+    return {
+      cookie,
+      loggedInUserInfo: this.getLoggedInUserInfo(updatedUser)
+    }
+  }
+
+  async updateEmail(updateEmailDto: UpdateEmailDto, user: User) {
+    const { email } = updateEmailDto
+    if (user.provider) {
+      throw new BadRequestException(
+        'Unable to update email from account created with a social login'
+      )
+    }
+    const updatedUser = await this.userRepository.updateEmail(email, user)
+    await this.mailService.sendEmailUpdatedEmail(user, email)
     const { cookie } = this.getCookieWithJwtToken(updatedUser)
     return {
       cookie,

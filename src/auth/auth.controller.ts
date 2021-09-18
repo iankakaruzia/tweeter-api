@@ -29,6 +29,7 @@ import { AuthHttpExceptionFilter } from './filters/auth-http-exception.filter'
 import { FacebookGuard } from './guards/facebook.guard'
 import { GithubGuard } from './guards/github.guard'
 import { ConfigService } from '@nestjs/config'
+import { UpdateEmailDto } from './dtos/update-email.dto'
 
 @Controller()
 export class AuthController {
@@ -165,6 +166,21 @@ export class AuthController {
   ) {
     const { cookie, loggedInUserInfo } = await this.authService.updateUsername(
       updateUsernameDto,
+      user
+    )
+    req.res.setHeader('Set-Cookie', cookie)
+    return loggedInUserInfo
+  }
+
+  @Patch('/user/email')
+  @UseGuards(JwtAuthGuard)
+  async updateEmail(
+    @Body() updateEmailDto: UpdateEmailDto,
+    @GetUser() user: User,
+    @Req() req: Request
+  ) {
+    const { cookie, loggedInUserInfo } = await this.authService.updateEmail(
+      updateEmailDto,
       user
     )
     req.res.setHeader('Set-Cookie', cookie)

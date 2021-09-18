@@ -98,6 +98,11 @@ export class UserRepository extends Repository<User> {
     return this.save(user)
   }
 
+  async updateEmail(email: string, user: User) {
+    user.email = email
+    return this.save(user)
+  }
+
   async updateCurrentPassword(password: string, user: User) {
     user.password = password
     return this.save(user)

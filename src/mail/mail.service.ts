@@ -53,4 +53,16 @@ export class MailService {
       }
     })
   }
+
+  async sendEmailUpdatedEmail(user: User, newEmail: string) {
+    await this.mailProducer.sendMail({
+      to: user.email,
+      subject: 'Tweeter - Email updated!',
+      template: './updated-email',
+      context: {
+        email: newEmail,
+        logo: this.configService.get('CLIENT_URL')
+      }
+    })
+  }
 }
