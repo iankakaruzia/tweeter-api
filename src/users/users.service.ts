@@ -18,7 +18,7 @@ export class UsersService {
     photo: Express.Multer.File,
     imageUrlDto: ImageUrlDto,
     user: User
-  ): Promise<User> {
+  ) {
     const { imageUrl: url } = imageUrlDto
     let imageUrl: string
     if (!photo && !url) {
@@ -43,14 +43,17 @@ export class UsersService {
       )
       imageUrl = secure_url
     }
-    return this.userRepository.updateUserProfilePhoto(imageUrl, user)
+    await this.userRepository.updateUserProfilePhoto(imageUrl, user)
+    return {
+      profilePhoto: imageUrl
+    }
   }
 
   async updateCoverPhoto(
     cover: Express.Multer.File,
     imageUrlDto: ImageUrlDto,
     user: User
-  ): Promise<User> {
+  ) {
     const { imageUrl: url } = imageUrlDto
     let imageUrl: string
     if (!cover && !url) {
@@ -75,7 +78,10 @@ export class UsersService {
       )
       imageUrl = secure_url
     }
-    return this.userRepository.updateUserCoverPhoto(imageUrl, user)
+    await this.userRepository.updateUserCoverPhoto(imageUrl, user)
+    return {
+      coverPhoto: imageUrl
+    }
   }
 
   async updateProfileInfo(
