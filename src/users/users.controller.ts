@@ -3,6 +3,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  HttpCode,
   Patch,
   Post,
   UploadedFile,
@@ -22,6 +23,7 @@ import { UsersService } from './users.service'
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
+  @HttpCode(200)
   @Post('profile-photo')
   @UseInterceptors(FileInterceptor('photo'))
   @UseGuards(JwtAuthGuard)
@@ -33,6 +35,7 @@ export class UsersController {
     return this.usersService.updateProfilePhoto(photo, imageUrlDto, user)
   }
 
+  @HttpCode(200)
   @Post('cover-photo')
   @UseInterceptors(FileInterceptor('cover'))
   @UseGuards(JwtAuthGuard)

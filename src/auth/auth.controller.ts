@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   HttpStatus,
   Param,
   Patch,
@@ -110,6 +111,7 @@ export class AuthController {
     req.res.redirect(`${redirectUrl}?status=success`)
   }
 
+  @HttpCode(200)
   @Post('/login')
   async login(
     @Body() loginDto: LoginDto,
@@ -128,6 +130,7 @@ export class AuthController {
     }
   }
 
+  @HttpCode(200)
   @Post('/confirm-account/:token')
   async confirmAccount(@Param('token') token: string) {
     await this.authService.confirmAccount(token)
@@ -137,6 +140,7 @@ export class AuthController {
     }
   }
 
+  @HttpCode(200)
   @Post('/forgot-password')
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     await this.authService.forgotPassword(forgotPasswordDto)
@@ -146,6 +150,7 @@ export class AuthController {
     }
   }
 
+  @HttpCode(200)
   @Post('/reset-password/:token')
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
@@ -200,6 +205,7 @@ export class AuthController {
     return this.authService.getLoggedInUserInfo(user)
   }
 
+  @HttpCode(200)
   @Post('/logout')
   async logout(@Req() req: Request) {
     const cookie = this.authService.logout()
