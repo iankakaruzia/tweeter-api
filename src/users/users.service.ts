@@ -43,9 +43,17 @@ export class UsersService {
       )
       imageUrl = secure_url
     }
-    await this.userRepository.updateUserProfilePhoto(imageUrl, user)
+    const updatedUser = await this.userRepository.updateUserProfilePhoto(
+      imageUrl,
+      user
+    )
     return {
-      profilePhoto: imageUrl
+      user: {
+        email: updatedUser.email,
+        username: updatedUser.username,
+        name: updatedUser?.name,
+        profilePhoto: updatedUser?.profilePhoto
+      }
     }
   }
 
