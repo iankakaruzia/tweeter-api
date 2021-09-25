@@ -1,5 +1,4 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
-import { TypeOrmModule } from '@nestjs/typeorm'
 import { GraphQLModule } from '@nestjs/graphql'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { ThrottlerModule } from '@nestjs/throttler'
@@ -16,6 +15,7 @@ import { LikesModule } from './likes/likes.module'
 import { SavesModule } from './saves/saves.module'
 import { RetweetsModule } from './retweets/retweets.module'
 import { CommentsModule } from './comments/comments.module'
+import { PrismaModule } from './prisma/prisma.module'
 
 @Module({
   imports: [
@@ -39,25 +39,6 @@ import { CommentsModule } from './comments/comments.module'
         }
       }
     }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => {
-        return {
-          type: 'postgres',
-          logging:
-            configService.get('NODE_ENV') === 'production' ? false : true,
-          host: configService.get('POSTGRES_HOST'),
-          port: configService.get('POSTGRES_PORT'),
-          username: configService.get('POSTGRES_USER'),
-          password: configService.get('POSTGRES_PASSWORD'),
-          database: configService.get('POSTGRES_DB'),
-          autoLoadEntities: true,
-          synchronize:
-            configService.get('NODE_ENV') === 'production' ? false : true
-        }
-      }
-    }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
       sortSchema: true,
@@ -73,7 +54,8 @@ import { CommentsModule } from './comments/comments.module'
     LikesModule,
     SavesModule,
     RetweetsModule,
-    CommentsModule
+    CommentsModule,
+    PrismaModule
   ]
 })
 export class AppModule implements NestModule {

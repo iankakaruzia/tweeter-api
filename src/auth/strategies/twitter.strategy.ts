@@ -1,16 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
-import { InjectRepository } from '@nestjs/typeorm'
 import { Profile, Strategy } from 'passport-twitter'
-import { UserRepository } from 'src/users/repositories/user.repository'
-import { Provider } from '../enums/provider.enum'
+import { Provider } from '@prisma/client'
+import { AuthService } from '../auth.service'
 
 @Injectable()
 export class TwitterStrategy extends PassportStrategy(Strategy, 'twitter') {
   constructor(
     private configService: ConfigService,
-    @InjectRepository(UserRepository) private userRepository: UserRepository
+    private authService: AuthService
   ) {
     super({
       consumerKey: configService.get('TWITTER_AUTH_API_KEY'),
@@ -33,13 +32,10 @@ export class TwitterStrategy extends PassportStrategy(Strategy, 'twitter') {
       )
     }
 
-    let user = await this.userRepository.findUserByProvider(
-      Provider.TWITTER,
-      id
-    )
+    let user = await this.authService.getUserByProvider(id, Provider.TWITTER)
 
     if (!user) {
-      user = await this.userRepository.createUserByProvider({
+      user = await this.authService.createUserByProvider({
         provider: Provider.TWITTER,
         providerId: id,
         name: displayName,

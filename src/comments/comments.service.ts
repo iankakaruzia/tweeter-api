@@ -4,38 +4,30 @@ import {
   Injectable,
   NotFoundException
 } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
 import { FileUpload } from 'graphql-upload'
-import { TweetsService } from 'src/tweets/tweets.service'
+import { PrismaService } from 'src/prisma/prisma.service'
 import { UploadService } from 'src/upload/upload.service'
-import { User } from 'src/users/entities/user.entity'
-import { Comment } from './entities/comment.entity'
+import { User as UserModel, Comment as CommentModel } from '@prisma/client'
 import { AddCommentInput } from './inputs/add-comment.input'
-import { CommentRepository } from './repositories/comment.repository'
 
 @Injectable()
 export class CommentsService {
   constructor(
     private uploadService: UploadService,
-    private tweetsService: TweetsService,
-    @InjectRepository(CommentRepository)
-    private commentRepository: CommentRepository
+    private prisma: PrismaService
   ) {}
 
   async addComment(
     image: FileUpload,
     addCommentInput: AddCommentInput,
-    user: User
-  ): Promise<Comment> {
-    const { content } = addCommentInput
+    user: UserModel
+  ): Promise<CommentModel> {
+    const { content, tweetId } = addCommentInput
     if (!content && !image) {
       throw new BadRequestException(
         'Please provide a text content or a image to add a comment'
       )
     }
-
-    const tweet = await this.tweetsService.getTweet(addCommentInput.tweetId)
-
     let imageUrl: string
     if (image) {
       const { createReadStream } = image
@@ -47,33 +39,43 @@ export class CommentsService {
       })
       imageUrl = secure_url
     }
-
-    return this.commentRepository.addComment(
-      {
-        tweet,
+    return this.prisma.comment.create({
+      data: {
         imageUrl,
-        content
+        content,
+        tweet: {
+          connect: { id: tweetId }
+        },
+        author: {
+          connect: { id: user.id }
+        }
       },
-      user
-    )
+      include: {
+        tweet: true,
+        author: true
+      }
+    })
   }
 
-  async removeComment(commentId: number, user: User) {
-    const comment = await this.commentRepository.findOne(commentId)
-
+  async removeComment(commentId: number, user: UserModel) {
+    const comment = await this.prisma.comment.findUnique({
+      where: { id: commentId }
+    })
     if (!comment) {
       throw new NotFoundException('Unable to find the comment')
     }
-
-    if (comment.author.id !== user.id) {
+    if (comment.authorId !== user.id) {
       throw new ForbiddenException('Only the user that liked can dislike')
     }
-
-    await this.commentRepository.remove(comment)
+    await this.prisma.comment.delete({
+      where: { id: comment.id }
+    })
   }
 
-  async getComment(id: number): Promise<Comment> {
-    const comment = await this.commentRepository.findOne(id)
+  async getComment(id: number): Promise<CommentModel> {
+    const comment = await this.prisma.comment.findUnique({
+      where: { id }
+    })
     if (!comment) {
       throw new NotFoundException('Unable to find a Comment with the given ID')
     }

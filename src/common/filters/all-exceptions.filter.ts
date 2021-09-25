@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common'
 import { Request, Response } from 'express'
 import * as Sentry from '@sentry/minimal'
-import { TypeORMError } from 'typeorm'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime'
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -20,8 +20,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR
 
-    if (exception instanceof TypeORMError) {
-      return this.handleTypeORMError(exception, request, response)
+    if (exception instanceof PrismaClientKnownRequestError) {
+      return this.handlePrismaError(exception, request, response)
     }
 
     if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
@@ -43,17 +43,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
   }
 
-  private handleTypeORMError(
-    exception: TypeORMError,
+  private handlePrismaError(
+    exception: PrismaClientKnownRequestError,
     request: Request,
     response: Response
   ) {
     if (response.status) {
-      if (
-        exception.message.includes(
-          'duplicate key value violates unique constraint'
-        )
-      ) {
+      if (exception.code === 'P2002') {
         response.status(HttpStatus.CONFLICT).json({
           statusCode: HttpStatus.CONFLICT,
           timestamp: new Date().toISOString(),

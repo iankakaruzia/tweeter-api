@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                      Int       @id @default(autoincrement())
+  name                    String?
+  email                   String    @unique
+  username                String    @unique
+  password                String?
+  provider                Provider?
+  providerId              String?   @unique
+  bio                     String?
+  profilePhoto            String?
+  coverPhoto              String?
+  phone                   String?
+  birthday                DateTime?
+  isActive                Boolean   @default(false)
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  resetPasswordToken      String?
+  resetPasswordExpiration BigInt?
+  confirmationToken       String?
+
+  tweets   Tweet[]
+  retweets Retweet[]
+  comments Comment[]
+  likes    Like[]
+  saves    Save[]
+
+  @@map("users")
+}
+
+model Tweet {
+  id        Int      @id @default(autoincrement())
+  content   String?
+  imageUrl  String?
+  isPublic  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int
+
+  retweets Retweet[]
+  comments Comment[]
+  likes    Like[]
+  saves    Save[]
+
+  @@map("tweets")
+}
+
+model Retweet {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  tweet   Tweet @relation(fields: [tweetId], references: [id])
+  tweetId Int
+
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int
+
+  @@map("retweets")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+
+  tweet   Tweet @relation(fields: [tweetId], references: [id])
+  tweetId Int
+
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int
+
+  likes Like[]
+
+  @@map("comments")
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int
+
+  tweet   Tweet? @relation(fields: [tweetId], references: [id])
+  tweetId Int?
+
+  comment   Comment? @relation(fields: [commentId], references: [id])
+  commentId Int?
+
+  @@map("likes")
+}
+
+model Save {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int
+
+  tweet   Tweet @relation(fields: [tweetId], references: [id])
+  tweetId Int
+
+  @@map("saves")
+}
+
+enum Provider {
+  GOOGLE
+  FACEBOOK
+  TWITTER
+  GITHUB
+}

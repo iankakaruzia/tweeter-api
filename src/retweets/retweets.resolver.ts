@@ -1,8 +1,8 @@
 import { UseGuards } from '@nestjs/common'
-import { Args, ID, Mutation, Resolver } from '@nestjs/graphql'
+import { Args, ID, Int, Mutation, Resolver } from '@nestjs/graphql'
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator'
 import { GqlAuthGuard } from 'src/auth/guards/gql-auth.guard'
-import { User } from 'src/users/entities/user.entity'
+import { User as UserModel } from '@prisma/client'
 import { RetweetType } from './models/retweet.type'
 import { RetweetsService } from './retweets.service'
 
@@ -13,8 +13,8 @@ export class RetweetsResolver {
   @Mutation((_returns) => RetweetType)
   @UseGuards(GqlAuthGuard)
   async retweet(
-    @Args('tweetId', { type: () => ID }) tweetId: number,
-    @CurrentUser() user: User
+    @Args('tweetId', { type: () => Int }) tweetId: number,
+    @CurrentUser() user: UserModel
   ) {
     return this.retweetsService.retweet(tweetId, user)
   }
@@ -22,8 +22,8 @@ export class RetweetsResolver {
   @Mutation((_returns) => ID, { nullable: true })
   @UseGuards(GqlAuthGuard)
   async removeRetweet(
-    @Args('retweetId', { type: () => ID }) retweetId: number,
-    @CurrentUser() user: User
+    @Args('retweetId', { type: () => Int }) retweetId: number,
+    @CurrentUser() user: UserModel
   ) {
     await this.retweetsService.removeRetweet(retweetId, user)
     return null

@@ -1,7 +1,6 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql'
-import { Tweet } from 'src/tweets/entities/tweet.entity'
 import { TweetType } from 'src/tweets/models/tweet.type'
-import { User } from 'src/users/entities/user.entity'
+import { User as UserModel, Tweet as TweetModel } from '@prisma/client'
 import { UserType } from 'src/users/models/user.type'
 
 @ObjectType('Save')
@@ -10,10 +9,10 @@ export class SaveType {
   id: number
 
   @Field((_type) => UserType)
-  author: User
+  author: UserModel
 
   @Field((_type) => TweetType)
-  tweet: Tweet
+  tweet: TweetModel
 
   @Field()
   createdAt: Date

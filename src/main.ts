@@ -8,6 +8,7 @@ import * as cookieParser from 'cookie-parser'
 import * as session from 'express-session'
 import { AppModule } from './app.module'
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter'
+import { PrismaService } from './prisma/prisma.service'
 
 const configService = new ConfigService()
 
@@ -61,6 +62,9 @@ async function bootstrap() {
       challenge: true
     })
   )
+
+  const prismaService: PrismaService = app.get(PrismaService)
+  prismaService.enableShutdownHooks(app)
 
   await app.listen(PORT || 8080)
 }

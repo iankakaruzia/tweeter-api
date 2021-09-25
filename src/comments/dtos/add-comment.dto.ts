@@ -1,7 +1,7 @@
-import { Tweet } from 'src/tweets/entities/tweet.entity'
+import { Tweet as TweetModel } from '@prisma/client'
 
 export class AddCommentDto {
   imageUrl?: string
   content?: string
-  tweet: Tweet
+  tweet: TweetModel
 }

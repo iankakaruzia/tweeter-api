@@ -1,9 +1,9 @@
 import { UseGuards } from '@nestjs/common'
-import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql'
+import { Args, ID, Int, Mutation, Query, Resolver } from '@nestjs/graphql'
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator'
 import { GqlAuthGuard } from 'src/auth/guards/gql-auth.guard'
 import { PaginationArgs } from 'src/common/pagination/models/pagination.args'
-import { User } from 'src/users/entities/user.entity'
+import { User as UserModel } from '@prisma/client'
 import { PaginatedSaves } from './models/paginated-saves.type'
 import { SaveType } from './models/save.type'
 import { SavesService } from './saves.service'
@@ -15,17 +15,20 @@ export class SavesResolver {
   @Mutation((_returns) => SaveType)
   @UseGuards(GqlAuthGuard)
   async save(
-    @Args('tweetId', { type: () => ID }) tweetId: number,
-    @CurrentUser() user: User
+    @Args('tweetId', { type: () => Int }) tweetId: number,
+    @CurrentUser() user: UserModel
   ) {
-    return this.savesService.save(tweetId, user)
+    const result = await this.savesService.save(tweetId, user)
+
+    console.log({ result })
+    return result
   }
 
   @Mutation((_returns) => ID, { nullable: true })
   @UseGuards(GqlAuthGuard)
   async removeSave(
-    @Args('saveId', { type: () => ID }) saveId: number,
-    @CurrentUser() user: User
+    @Args('saveId', { type: () => Int }) saveId: number,
+    @CurrentUser() user: UserModel
   ) {
     await this.savesService.removeSave(saveId, user)
     return null
@@ -33,7 +36,10 @@ export class SavesResolver {
 
   @Query((_returns) => PaginatedSaves)
   @UseGuards(GqlAuthGuard)
-  saves(@Args() paginationArgs: PaginationArgs, @CurrentUser() user: User) {
+  saves(
+    @Args() paginationArgs: PaginationArgs,
+    @CurrentUser() user: UserModel
+  ) {
     return this.savesService.getSaves(paginationArgs, user)
   }
 }

@@ -3,26 +3,24 @@ import {
   Injectable,
   NotFoundException
 } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
 import { FileUpload } from 'graphql-upload'
 import { UploadService } from 'src/upload/upload.service'
-import { User } from 'src/users/entities/user.entity'
 import { CreateTweetInput } from './inputs/create-tweet.input'
-import { Tweet } from './entities/tweet.entity'
-import { TweetRepository } from './repositories/tweet.repository'
+import { Tweet as TweetModel, User as UserModel } from '@prisma/client'
+import { PrismaService } from 'src/prisma/prisma.service'
 
 @Injectable()
 export class TweetsService {
   constructor(
     private uploadService: UploadService,
-    @InjectRepository(TweetRepository) private tweetRepository: TweetRepository
+    private prisma: PrismaService
   ) {}
 
   async createTweet(
     image: FileUpload,
     createTweetInput: CreateTweetInput,
-    user: User
-  ): Promise<Tweet> {
+    user: UserModel
+  ): Promise<TweetModel> {
     const content = createTweetInput?.content
     const isPublic = createTweetInput?.isPublic
     if (!content && !image) {
@@ -41,18 +39,26 @@ export class TweetsService {
       })
       imageUrl = secure_url
     }
-    return this.tweetRepository.createTweet(
-      {
+    return this.prisma.tweet.create({
+      data: {
         content,
         imageUrl,
-        isPublic
+        isPublic,
+        authorId: user.id
       },
-      user
-    )
+      include: {
+        author: true
+      }
+    })
   }
 
-  async getTweet(id: number): Promise<Tweet> {
-    const tweet = await this.tweetRepository.findOne(id)
+  async getTweet(id: number): Promise<TweetModel> {
+    const tweet = await this.prisma.tweet.findUnique({
+      where: { id },
+      include: {
+        author: true
+      }
+    })
     if (!tweet) {
       throw new NotFoundException('Unable to find a Tweet with the given ID')
     }

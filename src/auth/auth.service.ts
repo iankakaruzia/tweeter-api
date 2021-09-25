@@ -6,12 +6,12 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
-import { InjectRepository } from '@nestjs/typeorm'
 import { randomBytes, createHash } from 'crypto'
+import { nanoid } from 'nanoid'
+import { User as UserModel, Provider } from '@prisma/client'
 import { CryptographyService } from 'src/cryptography/cryptography.service'
 import { MailService } from 'src/mail/mail.service'
-import { User } from 'src/users/entities/user.entity'
-import { UserRepository } from 'src/users/repositories/user.repository'
+import { PrismaService } from 'src/prisma/prisma.service'
 import { ForgotPasswordDto } from './dtos/forgot-password.dto'
 import { LoginDto } from './dtos/login.dto'
 import { RegisterDto } from './dtos/register.dto'
@@ -21,6 +21,7 @@ import { UpdateEmailDto } from './dtos/update-email.dto'
 import { UpdateUsernameDto } from './dtos/update-username.dto'
 import { JwtPayload } from './interfaces/jwt-payload.interface'
 import { LoginReturnType } from './types/logged-user.type'
+import { CreateUserByProviderParams } from './types/create-user-provider-params.type'
 
 @Injectable()
 export class AuthService {
@@ -29,30 +30,39 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private mailService: MailService,
-    @InjectRepository(UserRepository) private userRepository: UserRepository
+    private prisma: PrismaService
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<User> {
+  async register(registerDto: RegisterDto): Promise<UserModel> {
     const confirmationToken = randomBytes(32).toString('hex')
     const hashedConfirmationToken = createHash('sha256')
       .update(confirmationToken)
       .digest('hex')
-    const { password } = registerDto
+    const { password, username, email } = registerDto
     const hashedPassword = await this.cryptographyService.hash(password)
-    const user = await this.userRepository.createUser(
-      {
-        ...registerDto,
-        password: hashedPassword
-      },
-      hashedConfirmationToken
-    )
+    const user = await this.prisma.user.create({
+      data: {
+        username,
+        email,
+        password: hashedPassword,
+        confirmationToken: hashedConfirmationToken
+      }
+    })
     await this.mailService.sendConfirmationEmail(user, confirmationToken)
     return user
   }
 
+  async getUserByUsernameOrEmail(usernameOrEmail: string) {
+    return this.prisma.user.findFirst({
+      where: {
+        OR: [{ email: usernameOrEmail }, { username: usernameOrEmail }]
+      }
+    })
+  }
+
   async login(loginDto: LoginDto) {
     const { usernameOrEmail, password } = loginDto
-    const user = await this.userRepository.getByUsernameOrEmail(usernameOrEmail)
+    const user = await this.getUserByUsernameOrEmail(usernameOrEmail)
     if (!user) {
       throw new UnauthorizedException('Invalid crendentials')
     }
@@ -78,38 +88,50 @@ export class AuthService {
     }
   }
 
-  async createPasswordResetToken(user: User): Promise<string> {
+  async createPasswordResetToken(user: UserModel): Promise<string> {
     const resetToken = randomBytes(32).toString('hex')
     const passwordResetToken = createHash('sha256')
       .update(resetToken)
       .digest('hex')
     const passwordResetExpiration = Date.now() + 24 * 60 * 60 * 1000 // 1 day
-    await this.userRepository.updateResetPasswordInfo(
-      user,
-      passwordResetToken,
-      passwordResetExpiration
-    )
+    await this.prisma.user.update({
+      where: {
+        id: user.id
+      },
+      data: {
+        resetPasswordToken: passwordResetToken,
+        resetPasswordExpiration: passwordResetExpiration
+      }
+    })
     return resetToken
   }
 
-  async resetPasswordResetToken(user: User): Promise<void> {
-    const passwordResetToken = undefined
-    const passwordResetExpiration = undefined
-    await this.userRepository.updateResetPasswordInfo(
-      user,
-      passwordResetToken,
-      passwordResetExpiration
-    )
+  async resetPasswordResetToken(user: UserModel): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetPasswordToken: null,
+        resetPasswordExpiration: null
+      }
+    })
   }
 
-  async getUserByResetPasswordToken(token: string): Promise<User> {
+  async getUserByResetPasswordToken(token: string): Promise<UserModel> {
     const hashedToken = createHash('sha256').update(token).digest('hex')
-    return this.userRepository.getByResetPasswordToken(hashedToken)
+    return this.prisma.user.findFirst({
+      where: {
+        resetPasswordToken: hashedToken
+      }
+    })
   }
 
-  async getUserByConfirmationToken(token: string): Promise<User> {
+  async getUserByConfirmationToken(token: string): Promise<UserModel> {
     const hashedToken = createHash('sha256').update(token).digest('hex')
-    return this.userRepository.getByConfirmationToken(hashedToken)
+    return this.prisma.user.findFirst({
+      where: {
+        confirmationToken: hashedToken
+      }
+    })
   }
 
   async updateUserPassword(
@@ -125,13 +147,20 @@ export class AuthService {
       )
     }
     const hashedPassword = await this.cryptographyService.hash(password)
-    await this.userRepository.updateUserPassword(user, hashedPassword)
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetPasswordExpiration: null,
+        resetPasswordToken: null
+      }
+    })
   }
 
   async updateCurrentPassword(
     updateCurrentPasswordDto: UpdateCurrentPasswordDto,
-    user: User
-  ): Promise<User> {
+    user: UserModel
+  ): Promise<UserModel> {
     const { currentPassword, password } = updateCurrentPasswordDto
     const isValidPassword = await this.cryptographyService.compare(
       currentPassword,
@@ -141,10 +170,15 @@ export class AuthService {
       throw new UnauthorizedException('Invalid crendentials')
     }
     const hashedPassword = await this.cryptographyService.hash(password)
-    return this.userRepository.updateCurrentPassword(hashedPassword, user)
+    return this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword
+      }
+    })
   }
 
-  getAccessToken(user: User) {
+  getAccessToken(user: UserModel) {
     const payload: JwtPayload = { username: user.username }
     const accessToken = this.jwtService.sign(payload)
     return {
@@ -159,7 +193,7 @@ export class AuthService {
     }
   }
 
-  getCookieWithJwtToken(user: User): { cookie: string } {
+  getCookieWithJwtToken(user: UserModel): { cookie: string } {
     const payload: JwtPayload = { username: user.username }
     const accessToken = this.jwtService.sign(payload)
     const cookie = `Authentication=${accessToken}; HttpOnly; Path=/; Max-Age=${this.configService.get(
@@ -174,7 +208,7 @@ export class AuthService {
     return 'Authentication=; HttpOnly; Path=/; Max-Age=0'
   }
 
-  getLoggedInUserInfo(user: User): LoginReturnType {
+  getLoggedInUserInfo(user: UserModel): LoginReturnType {
     return {
       user: {
         email: user.email,
@@ -193,22 +227,34 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('Invalid confirmation token!')
     }
-    await this.userRepository.activateAccount(user)
+    await this.prisma.user.update({
+      where: {
+        id: user.id
+      },
+      data: {
+        isActive: true
+      }
+    })
     await this.mailService.sendSuccessfullConfirmationEmail(user)
   }
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
     const { email } = forgotPasswordDto
-    const user = await this.userRepository.getByUsernameOrEmail(email)
+    const user = await this.getUserByUsernameOrEmail(email)
     if (user) {
       const resetToken = await this.createPasswordResetToken(user)
       await this.mailService.sendForgotPasswordEmail(user, resetToken)
     }
   }
 
-  async updateUsername(updateUsernameDto: UpdateUsernameDto, user: User) {
+  async updateUsername(updateUsernameDto: UpdateUsernameDto, user: UserModel) {
     const { username } = updateUsernameDto
-    const updatedUser = await this.userRepository.updateUsername(username, user)
+    const updatedUser = await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        username
+      }
+    })
     const { cookie } = this.getCookieWithJwtToken(updatedUser)
     return {
       cookie,
@@ -216,19 +262,48 @@ export class AuthService {
     }
   }
 
-  async updateEmail(updateEmailDto: UpdateEmailDto, user: User) {
+  async updateEmail(updateEmailDto: UpdateEmailDto, user: UserModel) {
     const { email } = updateEmailDto
     if (user.provider) {
       throw new BadRequestException(
         'Unable to update email from account created with a social login'
       )
     }
-    const updatedUser = await this.userRepository.updateEmail(email, user)
+    const updatedUser = await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        email
+      }
+    })
     await this.mailService.sendEmailUpdatedEmail(user, email)
     const { cookie } = this.getCookieWithJwtToken(updatedUser)
     return {
       cookie,
       loggedInUserInfo: this.getLoggedInUserInfo(updatedUser)
     }
+  }
+
+  async getUserByProvider(providerId: string, provider: Provider) {
+    return this.prisma.user.findFirst({
+      where: {
+        providerId,
+        provider
+      }
+    })
+  }
+
+  async createUserByProvider(params: CreateUserByProviderParams) {
+    const { provider, providerId, email, name, photoUrl } = params
+    return this.prisma.user.create({
+      data: {
+        email,
+        name,
+        username: nanoid(6),
+        profilePhoto: photoUrl,
+        isActive: true,
+        provider,
+        providerId
+      }
+    })
   }
 }

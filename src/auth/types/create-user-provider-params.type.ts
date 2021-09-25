@@ -1,4 +1,4 @@
-import { Provider } from '../enums/provider.enum'
+import { Provider } from '@prisma/client'
 
 export type CreateUserByProviderParams = {
   provider: Provider

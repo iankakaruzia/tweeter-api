@@ -1,23 +1,22 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
 import { createReadStream } from 'streamifier'
+import { User as UserModel } from '@prisma/client'
 import { UploadService } from 'src/upload/upload.service'
-import { User } from './entities/user.entity'
-import { UserRepository } from './repositories/user.repository'
 import { UpdateProfileDto } from './dtos/update-profile.dto'
 import { ImageUrlDto } from './dtos/image-url.dto'
+import { PrismaService } from 'src/prisma/prisma.service'
 
 @Injectable()
 export class UsersService {
   constructor(
     private uploadService: UploadService,
-    @InjectRepository(UserRepository) private userRepository: UserRepository
+    private prisma: PrismaService
   ) {}
 
   async updateProfilePhoto(
     photo: Express.Multer.File,
     imageUrlDto: ImageUrlDto,
-    user: User
+    user: UserModel
   ) {
     const { imageUrl: url } = imageUrlDto
     let imageUrl: string
@@ -43,10 +42,12 @@ export class UsersService {
       )
       imageUrl = secure_url
     }
-    const updatedUser = await this.userRepository.updateUserProfilePhoto(
-      imageUrl,
-      user
-    )
+    const updatedUser = await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        profilePhoto: imageUrl
+      }
+    })
     return {
       user: {
         email: updatedUser.email,
@@ -60,7 +61,7 @@ export class UsersService {
   async updateCoverPhoto(
     cover: Express.Multer.File,
     imageUrlDto: ImageUrlDto,
-    user: User
+    user: UserModel
   ) {
     const { imageUrl: url } = imageUrlDto
     let imageUrl: string
@@ -86,7 +87,12 @@ export class UsersService {
       )
       imageUrl = secure_url
     }
-    await this.userRepository.updateUserCoverPhoto(imageUrl, user)
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        coverPhoto: imageUrl
+      }
+    })
     return {
       coverPhoto: imageUrl
     }
@@ -94,8 +100,26 @@ export class UsersService {
 
   async updateProfileInfo(
     updateProfileDto: UpdateProfileDto,
-    user: User
-  ): Promise<User> {
-    return this.userRepository.updateUserProfile(updateProfileDto, user)
+    user: UserModel
+  ): Promise<UserModel> {
+    return this.prisma.user.update({
+      where: { id: user.id },
+      data: { ...updateProfileDto }
+    })
+  }
+
+  sanityzeUser(user: UserModel) {
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      username: user.username,
+      provider: user.provider,
+      bio: user.bio,
+      profilePhoto: user.profilePhoto,
+      coverPhoto: user.coverPhoto,
+      phone: user.phone,
+      birthday: user.birthday
+    }
   }
 }

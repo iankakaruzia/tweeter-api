@@ -1,16 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
-import { InjectRepository } from '@nestjs/typeorm'
 import { Profile, Strategy } from 'passport-github'
-import { UserRepository } from 'src/users/repositories/user.repository'
-import { Provider } from '../enums/provider.enum'
+import { Provider } from '@prisma/client'
+import { AuthService } from '../auth.service'
 
 @Injectable()
 export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
   constructor(
     private configService: ConfigService,
-    @InjectRepository(UserRepository) private userRepository: UserRepository
+    private authService: AuthService
   ) {
     super({
       clientID: configService.get('GITHUB_AUTH_CLIENT_ID'),
@@ -33,10 +32,10 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
       )
     }
 
-    let user = await this.userRepository.findUserByProvider(Provider.GITHUB, id)
+    let user = await this.authService.getUserByProvider(id, Provider.GITHUB)
 
     if (!user) {
-      user = await this.userRepository.createUserByProvider({
+      user = await this.authService.createUserByProvider({
         provider: Provider.GITHUB,
         providerId: id,
         name: displayName,

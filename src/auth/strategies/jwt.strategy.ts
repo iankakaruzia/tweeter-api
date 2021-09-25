@@ -1,16 +1,16 @@
-import { UnauthorizedException } from '@nestjs/common'
+import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
-import { InjectRepository } from '@nestjs/typeorm'
 import { Request } from 'express'
 import { ExtractJwt, Strategy } from 'passport-jwt'
-import { UserRepository } from 'src/users/repositories/user.repository'
+import { AuthService } from '../auth.service'
 import { JwtPayload } from '../interfaces/jwt-payload.interface'
 
+@Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private configService: ConfigService,
-    @InjectRepository(UserRepository) private userRepository: UserRepository
+    private authService: AuthService
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
@@ -24,12 +24,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: JwtPayload) {
     const { username } = payload
-    const user = await this.userRepository.findOne({ username })
-
+    const user = await this.authService.getUserByUsernameOrEmail(username)
     if (!user) {
-      throw new UnauthorizedException()
+      throw new UnauthorizedException('Invalid Credentials')
     }
-
     return user
   }
 }

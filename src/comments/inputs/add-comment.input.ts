@@ -1,4 +1,4 @@
-import { Field, ID, InputType } from '@nestjs/graphql'
+import { Field, InputType, Int } from '@nestjs/graphql'
 import { IsOptional, IsString } from 'class-validator'
 
 @InputType()
@@ -9,6 +9,6 @@ export class AddCommentInput {
   content?: string
 
   @IsOptional()
-  @Field(() => ID)
+  @Field(() => Int)
   tweetId: number
 }
