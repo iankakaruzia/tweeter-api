@@ -1,5 +1,5 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql'
-import { User } from 'src/users/entities/user.entity'
+import { User as UserModel } from '@prisma/client'
 import { UserType } from 'src/users/models/user.type'
 
 @ObjectType('Tweet')
@@ -20,5 +20,5 @@ export class TweetType {
   createdAt: Date
 
   @Field((_type) => UserType)
-  author: User
+  author: UserModel
 }

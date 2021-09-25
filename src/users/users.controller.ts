@@ -59,6 +59,6 @@ export class UsersController {
   @Get('/me')
   @UseGuards(JwtAuthGuard)
   async me(@GetUser() user: UserModel) {
-    return user
+    return this.usersService.sanityzeUser(user)
   }
 }

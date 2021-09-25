@@ -1,85 +1,92 @@
-import { LessThan, MoreThan, SelectQueryBuilder } from 'typeorm'
+import { PrismaService } from 'src/prisma/prisma.service'
 import { PageInfo } from './models/page-info.type'
 import { PaginationArgs } from './models/pagination.args'
 
-/**
- * Based on https://gist.github.com/tumainimosha/6652deb0aea172f7f2c4b2077c72d16c
- */
-
-type PaginateArgs<T> = {
-  query: SelectQueryBuilder<T>
+type PaginateArgs = {
+  where?: Record<string, unknown>
+  include?: Record<string, unknown>
+  type: 'save'
   paginationArgs: PaginationArgs
-  cursorColumn?: string
-  columnName?: string
   defaultLimit?: number
+  prisma: PrismaService
 }
 
-export async function paginate<T>({
-  query,
+export async function paginate({
+  where = {},
+  include = {},
+  type,
   paginationArgs,
-  cursorColumn = 'id',
-  columnName = 'id',
-  defaultLimit = 25
-}: PaginateArgs<T>) {
-  query.orderBy({ [cursorColumn]: 'DESC' })
-
-  const totalCountQuery = query.clone()
-
-  if (paginationArgs.first) {
-    if (paginationArgs.after) {
-      const offsetId = Buffer.from(paginationArgs.after, 'base64').toString(
-        'ascii'
-      )
-      query.andWhere({ [columnName]: LessThan(offsetId) })
+  defaultLimit = 25,
+  prisma
+}: PaginateArgs) {
+  const { after, before, first, last } = paginationArgs
+  const cursorInfo = {}
+  let limit: number
+  if (first) {
+    if (after) {
+      const offsetId = parseInt(Buffer.from(after, 'base64').toString('ascii'))
+      cursorInfo['cursor'] = {
+        id: offsetId
+      }
+      cursorInfo['skip'] = 1
     }
-    const limit = paginationArgs.first ?? defaultLimit
-    query.limit(limit)
-  } else if (paginationArgs.last && paginationArgs.before) {
-    const offsetId = Buffer.from(paginationArgs.before, 'base64').toString(
-      'ascii'
-    )
-    const limit = paginationArgs.last ?? defaultLimit
-    query.andWhere({ [columnName]: MoreThan(offsetId) }).limit(limit)
+    limit = first ?? defaultLimit
+  } else if (last && before) {
+    const offsetId = parseInt(Buffer.from(before, 'base64').toString('ascii'))
+    limit = -(last ?? defaultLimit)
+    cursorInfo['cursor'] = {
+      id: offsetId
+    }
+    cursorInfo['skip'] = 1
   }
-  const result = await query.getMany()
 
-  const startCursorId = result.length > 0 ? result[0][columnName] : null
-  const endCursorId = result.length > 0 ? result.slice(-1)[0][columnName] : null
-  const beforeQuery = totalCountQuery.clone()
-  const afterQuery = beforeQuery.clone()
-
-  let countBefore = 0
-  let countAfter = 0
-  if (
-    beforeQuery.expressionMap.wheres &&
-    beforeQuery.expressionMap.wheres.length
-  ) {
-    countBefore = await beforeQuery
-      .andWhere(`${cursorColumn} > :cursor`, { cursor: startCursorId })
-      .getCount()
-    countAfter = await afterQuery
-      .andWhere(`${cursorColumn} < :cursor`, { cursor: endCursorId })
-      .getCount()
-  } else {
-    countBefore = await beforeQuery
-      .where(`${cursorColumn} > :cursor`, { cursor: startCursorId })
-      .getCount()
-
-    countAfter = await afterQuery
-      .where(`${cursorColumn} < :cursor`, { cursor: endCursorId })
-      .getCount()
-  }
+  const result = await prisma[type].findMany({
+    take: limit,
+    ...cursorInfo,
+    where: {
+      ...where
+    },
+    orderBy: {
+      id: 'desc'
+    },
+    include: {
+      ...include
+    }
+  })
 
   const edges = result.map((node) => ({
     node,
-    cursor: Buffer.from(`${node[columnName]}`).toString('base64')
+    cursor: Buffer.from(`${node.id}`).toString('base64')
   }))
 
+  const startCursorId = result.length > 0 ? result[0].id : null
+  const endCursorId = result.length > 0 ? result.slice(-1)[0].id : null
+  const countBefore = await prisma[type].count({
+    where: {
+      ...where,
+      id: {
+        gt: startCursorId
+      }
+    },
+    orderBy: {
+      id: 'desc'
+    }
+  })
+  const countAfter = await prisma[type].count({
+    where: {
+      ...where,
+      id: {
+        lt: endCursorId
+      }
+    },
+    orderBy: {
+      id: 'desc'
+    }
+  })
   const pageInfo = new PageInfo()
   pageInfo.startCursor = edges.length > 0 ? edges[0].cursor : null
   pageInfo.endCursor = edges.length > 0 ? edges.slice(-1)[0].cursor : null
   pageInfo.hasNextPage = countAfter > 0
   pageInfo.hasPreviousPage = countBefore > 0
-
   return { edges, pageInfo }
 }

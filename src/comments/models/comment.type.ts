@@ -1,7 +1,7 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql'
-import { Tweet } from 'src/tweets/entities/tweet.entity'
+import { User as UserModel } from '@prisma/client'
+import { Tweet as TweetModel } from '@prisma/client'
 import { TweetType } from 'src/tweets/models/tweet.type'
-import { User } from 'src/users/entities/user.entity'
 import { UserType } from 'src/users/models/user.type'
 
 @ObjectType('Comment')
@@ -16,10 +16,10 @@ export class CommentType {
   imageUrl: string
 
   @Field((_type) => UserType)
-  author: User
+  author: UserModel
 
   @Field((_type) => TweetType)
-  tweet: Tweet
+  tweet: TweetModel
 
   @Field({ nullable: true })
   likesCount: number

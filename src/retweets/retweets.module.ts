@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common'
-import { TypeOrmModule } from '@nestjs/typeorm'
-import { TweetsModule } from 'src/tweets/tweets.module'
-import { RetweetRepository } from './repositories/retweet.repository'
+import { PrismaModule } from 'src/prisma/prisma.module'
 import { RetweetsResolver } from './retweets.resolver'
 import { RetweetsService } from './retweets.service'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RetweetRepository]), TweetsModule],
+  imports: [PrismaModule],
   providers: [RetweetsService, RetweetsResolver]
 })
 export class RetweetsModule {}

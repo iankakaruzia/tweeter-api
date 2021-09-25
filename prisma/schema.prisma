@@ -29,6 +29,91 @@ model User {
   resetPasswordToken      String?
   resetPasswordExpiration BigInt?
   confirmationToken       String?
+
+  tweets   Tweet[]
+  retweets Retweet[]
+  comments Comment[]
+  likes    Like[]
+  saves    Save[]
+
+  @@map("users")
+}
+
+model Tweet {
+  id        Int      @id @default(autoincrement())
+  content   String?
+  imageUrl  String?
+  isPublic  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int
+
+  retweets Retweet[]
+  comments Comment[]
+  likes    Like[]
+  saves    Save[]
+
+  @@map("tweets")
+}
+
+model Retweet {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  tweet   Tweet @relation(fields: [tweetId], references: [id])
+  tweetId Int
+
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int
+
+  @@map("retweets")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+
+  tweet   Tweet @relation(fields: [tweetId], references: [id])
+  tweetId Int
+
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int
+
+  likes Like[]
+
+  @@map("comments")
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int
+
+  tweet   Tweet? @relation(fields: [tweetId], references: [id])
+  tweetId Int?
+
+  comment   Comment? @relation(fields: [commentId], references: [id])
+  commentId Int?
+
+  @@map("likes")
+}
+
+model Save {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int
+
+  tweet   Tweet @relation(fields: [tweetId], references: [id])
+  tweetId Int
+
+  @@map("saves")
 }
 
 enum Provider {

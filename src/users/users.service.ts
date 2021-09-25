@@ -107,4 +107,19 @@ export class UsersService {
       data: { ...updateProfileDto }
     })
   }
+
+  sanityzeUser(user: UserModel) {
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      username: user.username,
+      provider: user.provider,
+      bio: user.bio,
+      profilePhoto: user.profilePhoto,
+      coverPhoto: user.coverPhoto,
+      phone: user.phone,
+      birthday: user.birthday
+    }
+  }
 }

@@ -1,8 +1,8 @@
 import { ConfigService } from '@nestjs/config'
 import { Test, TestingModule } from '@nestjs/testing'
 import * as faker from 'faker'
+import { User as UserModel } from '@prisma/client'
 import { throwError } from '../../utils/tests/throw-error'
-import { User } from '../../users/entities/user.entity'
 import {
   CLIENT_CONFIRMATION_URL,
   CLIENT_RESET_PASSWORD_URL,
@@ -19,7 +19,7 @@ const mockMailProducer = () => ({
 const mockedUser = {
   email: faker.internet.email(),
   username: faker.internet.userName()
-} as User
+} as UserModel
 
 describe('MailService', () => {
   let service: MailService

@@ -1,9 +1,9 @@
 import { UseGuards } from '@nestjs/common'
-import { Args, ID, Mutation, Resolver } from '@nestjs/graphql'
+import { Args, ID, Int, Mutation, Resolver } from '@nestjs/graphql'
 import { FileUpload, GraphQLUpload } from 'graphql-upload'
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator'
 import { GqlAuthGuard } from 'src/auth/guards/gql-auth.guard'
-import { User } from 'src/users/entities/user.entity'
+import { User as UserModel } from '@prisma/client'
 import { CommentsService } from './comments.service'
 import { AddCommentInput } from './inputs/add-comment.input'
 import { CommentType } from './models/comment.type'
@@ -19,7 +19,7 @@ export class CommentsResolver {
     image: FileUpload,
     @Args('addCommentInput')
     addCommentInput: AddCommentInput,
-    @CurrentUser() user: User
+    @CurrentUser() user: UserModel
   ) {
     return this.commentsService.addComment(image, addCommentInput, user)
   }
@@ -27,8 +27,8 @@ export class CommentsResolver {
   @Mutation((_returns) => ID, { nullable: true })
   @UseGuards(GqlAuthGuard)
   async removeComment(
-    @Args('commentId', { type: () => ID }) commentId: number,
-    @CurrentUser() user: User
+    @Args('commentId', { type: () => Int }) commentId: number,
+    @CurrentUser() user: UserModel
   ) {
     await this.commentsService.removeComment(commentId, user)
     return null

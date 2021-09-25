@@ -52,7 +52,7 @@ export class AuthService {
     return user
   }
 
-  async getUserByUsernameOrEmail(usernameOrEmail: string): Promise<UserModel> {
+  async getUserByUsernameOrEmail(usernameOrEmail: string) {
     return this.prisma.user.findFirst({
       where: {
         OR: [{ email: usernameOrEmail }, { username: usernameOrEmail }]

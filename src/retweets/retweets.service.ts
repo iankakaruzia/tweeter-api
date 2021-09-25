@@ -1,37 +1,56 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException
 } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-import { TweetsService } from 'src/tweets/tweets.service'
-import { User } from 'src/users/entities/user.entity'
-import { RetweetRepository } from './repositories/retweet.repository'
+import { PrismaService } from 'src/prisma/prisma.service'
+import { User as UserModel } from '@prisma/client'
 
 @Injectable()
 export class RetweetsService {
-  constructor(
-    private tweetsService: TweetsService,
-    @InjectRepository(RetweetRepository)
-    private retweetRepository: RetweetRepository
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  async retweet(tweetId: number, user: User) {
-    const tweet = await this.tweetsService.getTweet(tweetId)
-    return this.retweetRepository.addRetweet(tweet, user)
+  async retweet(tweetId: number, user: UserModel) {
+    const retweetedTweet = await this.prisma.retweet.findFirst({
+      where: {
+        tweetId,
+        authorId: user.id
+      }
+    })
+    if (retweetedTweet) {
+      throw new BadRequestException('Tweet already saved')
+    }
+    return this.prisma.retweet.create({
+      data: {
+        author: {
+          connect: { id: user.id }
+        },
+        tweet: {
+          connect: { id: tweetId }
+        }
+      },
+      include: {
+        author: true,
+        tweet: true
+      }
+    })
   }
 
-  async removeRetweet(saveId: number, user: User) {
-    const retweet = await this.retweetRepository.findOne(saveId)
-
+  async removeRetweet(retweetId: number, user: UserModel) {
+    const retweet = await this.prisma.retweet.findUnique({
+      where: { id: retweetId }
+    })
     if (!retweet) {
       throw new NotFoundException('Unable to find the retweet')
     }
-
-    if (retweet.author.id !== user.id) {
+    if (retweet.authorId !== user.id) {
       throw new ForbiddenException('Only the user that retweeted can remove it')
     }
-
-    await this.retweetRepository.remove(retweet)
+    await this.prisma.retweet.delete({
+      where: {
+        id: retweet.id
+      }
+    })
   }
 }

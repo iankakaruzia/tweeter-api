@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common'
-import { TypeOrmModule } from '@nestjs/typeorm'
-import { TweetsModule } from 'src/tweets/tweets.module'
-import { SaveRepository } from './repositories/save.repository'
+import { PrismaModule } from 'src/prisma/prisma.module'
 import { SavesResolver } from './saves.resolver'
 import { SavesService } from './saves.service'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([SaveRepository]), TweetsModule],
+  imports: [PrismaModule],
   providers: [SavesService, SavesResolver]
 })
 export class SavesModule {}
