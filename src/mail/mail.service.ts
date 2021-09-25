@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { User } from 'src/users/entities/user.entity'
+import { User as UserModel } from '@prisma/client'
 import { MailProducer } from './jobs/mail.producer'
 
 @Injectable()
@@ -10,7 +10,7 @@ export class MailService {
     private mailProducer: MailProducer
   ) {}
 
-  async sendForgotPasswordEmail(user: User, token: string) {
+  async sendForgotPasswordEmail(user: UserModel, token: string) {
     const url = `${this.configService.get('CLIENT_RESET_PASSWORD_URL')}${token}`
 
     await this.mailProducer.sendMail({
@@ -26,7 +26,7 @@ export class MailService {
     })
   }
 
-  async sendConfirmationEmail(user: User, token: string) {
+  async sendConfirmationEmail(user: UserModel, token: string) {
     const url = `${this.configService.get('CLIENT_CONFIRMATION_URL')}${token}`
 
     await this.mailProducer.sendMail({
@@ -40,7 +40,7 @@ export class MailService {
     })
   }
 
-  async sendSuccessfullConfirmationEmail(user: User) {
+  async sendSuccessfullConfirmationEmail(user: UserModel) {
     const url = `${this.configService.get('CLIENT_URL')}/home`
 
     await this.mailProducer.sendMail({
@@ -54,7 +54,7 @@ export class MailService {
     })
   }
 
-  async sendEmailUpdatedEmail(user: User, newEmail: string) {
+  async sendEmailUpdatedEmail(user: UserModel, newEmail: string) {
     await this.mailProducer.sendMail({
       to: user.email,
       subject: 'Tweeter - Email updated!',

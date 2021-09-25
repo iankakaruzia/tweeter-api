@@ -1,16 +1,15 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
-import { InjectRepository } from '@nestjs/typeorm'
 import { Profile, Strategy } from 'passport-facebook'
-import { UserRepository } from 'src/users/repositories/user.repository'
-import { Provider } from '../enums/provider.enum'
+import { Provider } from '@prisma/client'
+import { AuthService } from '../auth.service'
 
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
   constructor(
     private configService: ConfigService,
-    @InjectRepository(UserRepository) private userRepository: UserRepository
+    private authService: AuthService
   ) {
     super({
       clientID: configService.get('FACEBOOK_AUTH_CLIENT_ID'),
@@ -28,13 +27,10 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     done: (err: any, user: any, info?: any) => void
   ) {
     const { name, emails, id } = profile
-    let user = await this.userRepository.findUserByProvider(
-      Provider.FACEBOOK,
-      id
-    )
+    let user = await this.authService.getUserByProvider(id, Provider.FACEBOOK)
 
     if (!user) {
-      user = await this.userRepository.createUserByProvider({
+      user = await this.authService.createUserByProvider({
         provider: Provider.FACEBOOK,
         providerId: id,
         name: name.givenName,

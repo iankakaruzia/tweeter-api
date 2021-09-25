@@ -11,11 +11,11 @@ import {
   UseInterceptors
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { User as UserModel } from '@prisma/client'
 import { GetUser } from 'src/auth/decorators/get-user.decorator'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
 import { ImageUrlDto } from './dtos/image-url.dto'
 import { UpdateProfileDto } from './dtos/update-profile.dto'
-import { User } from './entities/user.entity'
 import { UsersService } from './users.service'
 
 @UseInterceptors(ClassSerializerInterceptor)
@@ -30,7 +30,7 @@ export class UsersController {
   async uploadProfilePhoto(
     @UploadedFile() photo: Express.Multer.File,
     @Body() imageUrlDto: ImageUrlDto,
-    @GetUser() user: User
+    @GetUser() user: UserModel
   ) {
     return this.usersService.updateProfilePhoto(photo, imageUrlDto, user)
   }
@@ -42,7 +42,7 @@ export class UsersController {
   async uploadCoverPhoto(
     @UploadedFile() cover: Express.Multer.File,
     @Body() imageUrlDto: ImageUrlDto,
-    @GetUser() user: User
+    @GetUser() user: UserModel
   ) {
     return this.usersService.updateCoverPhoto(cover, imageUrlDto, user)
   }
@@ -51,14 +51,14 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   async updateProfileInfo(
     @Body() updateProfileDto: UpdateProfileDto,
-    @GetUser() user: User
+    @GetUser() user: UserModel
   ) {
     return this.usersService.updateProfileInfo(updateProfileDto, user)
   }
 
   @Get('/me')
   @UseGuards(JwtAuthGuard)
-  async me(@GetUser() user: User) {
+  async me(@GetUser() user: UserModel) {
     return user
   }
 }

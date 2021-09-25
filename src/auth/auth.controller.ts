@@ -12,8 +12,8 @@ import {
   UseGuards
 } from '@nestjs/common'
 import { Request } from 'express'
+import { User as UserModel } from '@prisma/client'
 
-import { User } from 'src/users/entities/user.entity'
 import { AuthService } from './auth.service'
 import { LoginDto } from './dtos/login.dto'
 import { RegisterDto } from './dtos/register.dto'
@@ -48,7 +48,7 @@ export class AuthController {
   @Get('/facebook/redirect')
   @UseGuards(new FacebookGuard())
   @UseFilters(new AuthHttpExceptionFilter())
-  async facebookLoginRedirect(@Req() req: Request, @GetUser() user: User) {
+  async facebookLoginRedirect(@Req() req: Request, @GetUser() user: UserModel) {
     const { cookie } = this.authService.getCookieWithJwtToken(user)
     const redirectUrl = this.configService.get<string>(
       'SOCIAL_LOGIN_REDIRECT_URL'
@@ -66,7 +66,7 @@ export class AuthController {
   @Get('/google/redirect')
   @UseGuards(new GoogleGuard())
   @UseFilters(new AuthHttpExceptionFilter())
-  async googleLoginRedirect(@Req() req: Request, @GetUser() user: User) {
+  async googleLoginRedirect(@Req() req: Request, @GetUser() user: UserModel) {
     const { cookie } = this.authService.getCookieWithJwtToken(user)
     const redirectUrl = this.configService.get<string>(
       'SOCIAL_LOGIN_REDIRECT_URL'
@@ -84,7 +84,7 @@ export class AuthController {
   @Get('/twitter/redirect')
   @UseGuards(new TwitterGuard())
   @UseFilters(new AuthHttpExceptionFilter())
-  async twitterLoginRedirect(@Req() req: Request, @GetUser() user: User) {
+  async twitterLoginRedirect(@Req() req: Request, @GetUser() user: UserModel) {
     const { cookie } = this.authService.getCookieWithJwtToken(user)
     const redirectUrl = this.configService.get<string>(
       'SOCIAL_LOGIN_REDIRECT_URL'
@@ -102,7 +102,7 @@ export class AuthController {
   @Get('/github/redirect')
   @UseGuards(new GithubGuard())
   @UseFilters(new AuthHttpExceptionFilter())
-  async githubLoginRedirect(@Req() req: Request, @GetUser() user: User) {
+  async githubLoginRedirect(@Req() req: Request, @GetUser() user: UserModel) {
     const { cookie } = this.authService.getCookieWithJwtToken(user)
     const redirectUrl = this.configService.get<string>(
       'SOCIAL_LOGIN_REDIRECT_URL'
@@ -166,7 +166,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async updateUsername(
     @Body() updateUsernameDto: UpdateUsernameDto,
-    @GetUser() user: User,
+    @GetUser() user: UserModel,
     @Req() req: Request
   ) {
     const { cookie, loggedInUserInfo } = await this.authService.updateUsername(
@@ -181,7 +181,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async updateEmail(
     @Body() updateEmailDto: UpdateEmailDto,
-    @GetUser() user: User,
+    @GetUser() user: UserModel,
     @Req() req: Request
   ) {
     const { cookie, loggedInUserInfo } = await this.authService.updateEmail(
@@ -196,7 +196,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async updateCurrentPassword(
     @Body() updateCurrentPasswordDto: UpdateCurrentPasswordDto,
-    @GetUser() user: User,
+    @GetUser() user: UserModel,
     @Req() req: Request
   ) {
     await this.authService.updateCurrentPassword(updateCurrentPasswordDto, user)
@@ -215,7 +215,7 @@ export class AuthController {
 
   @Get('/validate')
   @UseGuards(JwtAuthGuard)
-  async validade(@GetUser() user: User) {
+  async validade(@GetUser() user: UserModel) {
     return this.authService.getLoggedInUserInfo(user)
   }
 

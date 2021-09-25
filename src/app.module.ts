@@ -16,6 +16,7 @@ import { LikesModule } from './likes/likes.module'
 import { SavesModule } from './saves/saves.module'
 import { RetweetsModule } from './retweets/retweets.module'
 import { CommentsModule } from './comments/comments.module'
+import { PrismaModule } from './prisma/prisma.module'
 
 @Module({
   imports: [
@@ -73,7 +74,8 @@ import { CommentsModule } from './comments/comments.module'
     LikesModule,
     SavesModule,
     RetweetsModule,
-    CommentsModule
+    CommentsModule,
+    PrismaModule
   ]
 })
 export class AppModule implements NestModule {

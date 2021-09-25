@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common'
 import { PassportModule } from '@nestjs/passport'
 import { JwtModule } from '@nestjs/jwt'
-import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { CryptographyModule } from 'src/cryptography/cryptography.module'
-import { UserRepository } from 'src/users/repositories/user.repository'
 import { MailModule } from 'src/mail/mail.module'
 import { AuthService } from './auth.service'
 import { JwtStrategy } from './strategies/jwt.strategy'
@@ -13,6 +11,7 @@ import { AuthController } from './auth.controller'
 import { GoogleStrategy } from './strategies/google.strategy'
 import { TwitterStrategy } from './strategies/twitter.strategy'
 import { GithubStrategy } from './strategies/github.strategy'
+import { PrismaModule } from 'src/prisma/prisma.module'
 
 @Module({
   imports: [
@@ -30,9 +29,9 @@ import { GithubStrategy } from './strategies/github.strategy'
         }
       }
     }),
-    TypeOrmModule.forFeature([UserRepository]),
     CryptographyModule,
-    MailModule
+    MailModule,
+    PrismaModule
   ],
   providers: [
     AuthService,
