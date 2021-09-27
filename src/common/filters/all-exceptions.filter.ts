@@ -8,6 +8,7 @@ import {
 import { Request, Response } from 'express'
 import * as Sentry from '@sentry/minimal'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime'
+import { UserInputError } from 'apollo-server-errors'
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -48,22 +49,43 @@ export class AllExceptionsFilter implements ExceptionFilter {
     request: Request,
     response: Response
   ) {
-    if (response.status) {
-      if (exception.code === 'P2002') {
-        response.status(HttpStatus.CONFLICT).json({
-          statusCode: HttpStatus.CONFLICT,
-          timestamp: new Date().toISOString(),
-          path: request.url,
-          message: 'The request could not be completed due to a conflict.'
-        })
-      } else {
+    switch (exception.code) {
+      case 'P2002':
+        if (response.status) {
+          response.status(HttpStatus.CONFLICT).json({
+            statusCode: HttpStatus.CONFLICT,
+            timestamp: new Date().toISOString(),
+            path: request.url,
+            message: 'The request could not be completed due to a conflict.'
+          })
+        } else {
+          throw new UserInputError('Bad Request', { errors: exception })
+        }
+        break
+      case 'P2025':
+        if (response.status) {
+          response.status(HttpStatus.NOT_FOUND).json({
+            statusCode: HttpStatus.NOT_FOUND,
+            timestamp: new Date().toISOString(),
+            path: request.url,
+            message: 'Unable to find the record'
+          })
+        } else {
+          throw new UserInputError('Not Found', {
+            errors: exception
+          })
+        }
+        break
+      default:
         Sentry.captureException(exception)
-        response
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .json({ message: 'Internal Server Error.' })
-      }
-    } else {
-      return exception
+        if (response.status) {
+          response
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .json({ message: 'Internal Server Error.' })
+        } else {
+          return exception
+        }
+        break
     }
   }
 }

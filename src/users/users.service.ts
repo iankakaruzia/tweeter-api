@@ -5,6 +5,7 @@ import { UploadService } from 'src/upload/upload.service'
 import { UpdateProfileDto } from './dtos/update-profile.dto'
 import { ImageUrlDto } from './dtos/image-url.dto'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { SingleFollowType } from './models/follow.type'
 
 @Injectable()
 export class UsersService {
@@ -121,5 +122,111 @@ export class UsersService {
       phone: user.phone,
       birthday: user.birthday
     }
+  }
+
+  async following(user: UserModel) {
+    const result = await this.prisma.follows.findMany({
+      where: {
+        followerId: user.id
+      },
+      include: {
+        following: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            profilePhoto: true
+          }
+        }
+      }
+    })
+    const count = result.length
+    const following: SingleFollowType[] = result.map((followerInfo) => ({
+      createdAt: followerInfo.createdAt,
+      ...followerInfo.following
+    }))
+    return {
+      count,
+      following
+    }
+  }
+
+  async followers(user: UserModel) {
+    const result = await this.prisma.follows.findMany({
+      where: {
+        followingId: user.id
+      },
+      include: {
+        follower: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            profilePhoto: true
+          }
+        }
+      }
+    })
+    const count = result.length
+    const followers: SingleFollowType[] = result.map((followerInfo) => ({
+      createdAt: followerInfo.createdAt,
+      ...followerInfo.follower
+    }))
+    return {
+      count,
+      followers
+    }
+  }
+
+  async follow(
+    userFollowedId: number,
+    user: UserModel
+  ): Promise<SingleFollowType> {
+    if (user.id === userFollowedId) {
+      throw new BadRequestException('You cannot follow yourself.')
+    }
+    const followInfo = await this.prisma.follows.create({
+      data: {
+        follower: {
+          connect: {
+            id: user.id
+          }
+        },
+        following: {
+          connect: {
+            id: userFollowedId
+          }
+        }
+      },
+      include: {
+        following: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            profilePhoto: true
+          }
+        }
+      }
+    })
+
+    return {
+      createdAt: followInfo.createdAt,
+      ...followInfo.following
+    }
+  }
+
+  async unfollow(userUnfollowedId: number, user: UserModel) {
+    if (user.id === userUnfollowedId) {
+      throw new BadRequestException('You cannot unfollow yourself.')
+    }
+    await this.prisma.follows.delete({
+      where: {
+        followerId_followingId: {
+          followerId: user.id,
+          followingId: userUnfollowedId
+        }
+      }
+    })
   }
 }

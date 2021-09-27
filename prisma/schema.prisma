@@ -36,7 +36,21 @@ model User {
   likes    Like[]
   saves    Save[]
 
+  followedBy Follows[] @relation("follower")
+  following  Follows[] @relation("following")
+
   @@map("users")
+}
+
+model Follows {
+  follower    User     @relation("follower", fields: [followerId], references: [id])
+  followerId  Int
+  following   User     @relation("following", fields: [followingId], references: [id])
+  followingId Int
+  createdAt   DateTime @default(now())
+
+  @@id([followerId, followingId])
+  @@map("follows")
 }
 
 model Tweet {
