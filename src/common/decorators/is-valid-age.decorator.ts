@@ -1,5 +1,5 @@
 import { registerDecorator, ValidationOptions } from 'class-validator'
-import { subYears, isBefore } from 'date-fns'
+import { subYears, isBefore, parseISO } from 'date-fns'
 
 export function IsValidAge(validationOptions?: ValidationOptions) {
   return (object: any, propertyName: string) => {
@@ -9,11 +9,11 @@ export function IsValidAge(validationOptions?: ValidationOptions) {
       propertyName,
       options: validationOptions,
       validator: {
-        validate(value: any) {
+        validate(value: string) {
+          const inputtedDate = parseISO(value)
           const currentDate = new Date()
           const minDate = subYears(currentDate, 16)
-
-          return isBefore(value, minDate)
+          return isBefore(inputtedDate, minDate)
         },
         defaultMessage() {
           return 'You need to have at least 16 years to be able to register in our platform.'

@@ -1,5 +1,5 @@
 import {
-  IsDate,
+  IsDateString,
   IsOptional,
   IsString,
   MaxLength,
@@ -24,7 +24,7 @@ export class UpdateProfileDto {
   @IsOptional()
   phone: string
 
-  @IsDate()
+  @IsDateString()
   @IsValidAge()
   @IsOptional()
   birthday: Date
