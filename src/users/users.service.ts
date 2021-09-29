@@ -103,10 +103,28 @@ export class UsersService {
     updateProfileDto: UpdateProfileDto,
     user: UserModel
   ): Promise<UserModel> {
+    const { name, bio, phone, birthday } = updateProfileDto
     return this.prisma.user.update({
       where: { id: user.id },
-      data: { ...updateProfileDto }
+      data: {
+        ...this.convertEmptyStringsToNull('name', name),
+        ...this.convertEmptyStringsToNull('bio', bio),
+        ...this.convertEmptyStringsToNull('phone', phone),
+        ...this.convertEmptyStringsToNull('birthday', birthday)
+      }
     })
+  }
+
+  convertEmptyStringsToNull(key: string, value: string | Date) {
+    if (!value && value !== '') return {}
+    if (value === '') {
+      return {
+        [key]: null
+      }
+    }
+    return {
+      [key]: value
+    }
   }
 
   sanityzeUser(user: UserModel) {

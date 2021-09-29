@@ -10,6 +10,7 @@ export function IsValidAge(validationOptions?: ValidationOptions) {
       options: validationOptions,
       validator: {
         validate(value: string) {
+          if (!value) return true
           const inputtedDate = parseISO(value)
           const currentDate = new Date()
           const minDate = subYears(currentDate, 16)

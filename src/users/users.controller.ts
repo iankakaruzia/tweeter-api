@@ -53,7 +53,11 @@ export class UsersController {
     @Body() updateProfileDto: UpdateProfileDto,
     @GetUser() user: UserModel
   ) {
-    return this.usersService.updateProfileInfo(updateProfileDto, user)
+    const updatedUser = await this.usersService.updateProfileInfo(
+      updateProfileDto,
+      user
+    )
+    return this.usersService.sanityzeUser(updatedUser)
   }
 
   @Get('/me')
