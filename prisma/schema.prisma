@@ -105,13 +105,13 @@ model Like {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
 
-  author   User @relation(fields: [authorId], references: [id])
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   authorId Int
 
-  tweet   Tweet? @relation(fields: [tweetId], references: [id])
+  tweet   Tweet? @relation(fields: [tweetId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   tweetId Int?
 
-  comment   Comment? @relation(fields: [commentId], references: [id])
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   commentId Int?
 
   @@map("likes")
