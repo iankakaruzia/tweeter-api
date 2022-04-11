@@ -1,7 +1,7 @@
 import { ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { ConfigService } from '@nestjs/config'
-import * as helmet from 'helmet'
+import helmet from 'helmet'
 import * as basicAuth from 'express-basic-auth'
 import * as Sentry from '@sentry/node'
 import * as cookieParser from 'cookie-parser'

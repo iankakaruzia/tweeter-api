@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { BullModule } from '@nestjs/bull'
 import { graphqlUploadExpress, GraphQLUpload } from 'graphql-upload'
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo'
 import { UsersModule } from './users/users.module'
 import { CryptographyModule } from './cryptography/cryptography.module'
 import { AuthModule } from './auth/auth.module'
@@ -39,11 +40,22 @@ import { PrismaModule } from './prisma/prisma.module'
         }
       }
     }),
-    GraphQLModule.forRoot({
-      autoSchemaFile: true,
-      sortSchema: true,
-      resolvers: { Upload: GraphQLUpload },
-      path: '/graphql'
+    GraphQLModule.forRootAsync<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          autoSchemaFile: true,
+          sortSchema: true,
+          resolvers: { Upload: GraphQLUpload },
+          path: '/graphql',
+          cors: {
+            origin: configService.get('CLIENT_URL'),
+            credentials: true
+          }
+        }
+      }
     }),
     UsersModule,
     CryptographyModule,
