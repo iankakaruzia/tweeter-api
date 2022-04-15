@@ -25,7 +25,7 @@ The premise of the API is a challenge from the [devChallenges site](https://devc
 
 ## Tech Stack
 
-**Server:** NestJS, Express, GraphQL, Cloudinary, Nodemailer
+**Server:** NestJS, Express, GraphQL, Cloudinary, Nodemailer, Prisma
 
 ## Environment Variables
 
