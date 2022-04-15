@@ -20,7 +20,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^1.6.1",
@@ -66,6 +67,8 @@
     "streamifier": "^0.1.1"
   },
   "devDependencies": {
+    "@commitlint/cli": "^16.2.3",
+    "@commitlint/config-conventional": "^16.2.1",
     "@nestjs/cli": "^8.2.5",
     "@nestjs/schematics": "^8.0.10",
     "@nestjs/testing": "^8.4.4",
@@ -93,7 +96,9 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "faker": "^6.6.6",
+    "husky": "^7.0.4",
     "jest": "^27.5.1",
+    "lint-staged": "^12.3.7",
     "prettier": "^2.6.2",
     "prisma": "3.12.0",
     "supertest": "^6.2.2",

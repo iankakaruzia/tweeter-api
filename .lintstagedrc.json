@@ -1,0 +1,4 @@
+{
+  "{src,apps,libs,test}/**/*.ts": ["yarn lint"],
+  "./**/*.{ts,js,json,*rc}": ["prettier --write"]
+}
